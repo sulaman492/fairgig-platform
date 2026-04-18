@@ -1,0 +1,483 @@
+/* src/components/SignUp.css */
+
+.signup-container {
+  min-height: 100vh;
+  width: 100%;
+  background: linear-gradient(135deg, #f9fafc 0%, #f0f4f8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.signup-wrapper {
+  max-width: 1200px;
+  width: 100%;
+  display: flex;
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  min-height: 700px;
+}
+
+/* Left Side - Branding */
+.signup-left {
+  flex: 1;
+  background: linear-gradient(135deg, #1f2c3e 0%, #2c3e50 100%);
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.signup-left::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(20, 168, 0, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.signup-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 48px;
+  position: relative;
+  z-index: 1;
+}
+
+.signup-brand i {
+  font-size: 2rem;
+  color: #14a800;
+}
+
+.signup-brand h2 {
+  color: white;
+  margin: 0;
+}
+
+.signup-testimonial {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 48px;
+}
+
+.signup-testimonial i {
+  font-size: 2rem;
+  color: #14a800;
+  opacity: 0.5;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.signup-testimonial p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  font-style: italic;
+}
+
+.testimonial-author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.testimonial-author img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid #14a800;
+}
+
+.testimonial-author strong {
+  display: block;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.testimonial-author span {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.signup-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1;
+}
+
+.stat {
+  text-align: center;
+  flex: 1;
+}
+
+.stat-number {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #14a800;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Right Side - Form */
+.signup-right {
+  flex: 1;
+  padding: 48px;
+  overflow-y: auto;
+}
+
+.signup-header {
+  margin-bottom: 32px;
+}
+
+.signup-header h1 {
+  font-size: 2rem;
+  color: #1f2c3e;
+  margin-bottom: 8px;
+}
+
+.signup-header p {
+  color: #5a6b7c;
+}
+
+.signup-header a {
+  color: #14a800;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.signup-header a:hover {
+  text-decoration: underline;
+}
+
+/* Form Styles */
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #1f2c3e;
+  font-size: 0.9rem;
+}
+
+.required {
+  color: #e74c3c;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrapper i:first-child {
+  position: absolute;
+  left: 12px;
+  color: #b8c6d4;
+  font-size: 1rem;
+}
+
+.input-wrapper input,
+.input-wrapper select {
+  width: 100%;
+  padding: 12px 40px 12px 40px;
+  border: 2px solid #e1e5ea;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: white;
+  font-family: inherit;
+}
+
+.input-wrapper select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235a6b7c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.input-wrapper input:focus,
+.input-wrapper select:focus {
+  outline: none;
+  border-color: #14a800;
+  box-shadow: 0 0 0 3px rgba(20, 168, 0, 0.1);
+}
+
+.input-wrapper input.error,
+.input-wrapper select.error {
+  border-color: #e74c3c;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #b8c6d4;
+  font-size: 1rem;
+  padding: 0;
+}
+
+.password-toggle:hover {
+  color: #14a800;
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+.password-hint {
+  margin-top: 4px;
+}
+
+.password-hint small {
+  color: #5a6b7c;
+  font-size: 0.75rem;
+}
+
+/* Checkbox Group */
+.checkbox-group {
+  margin-top: 8px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-weight: normal;
+  font-size: 0.9rem;
+  color: #1f2c3e;
+}
+
+.checkbox-label input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #14a800;
+}
+
+.checkbox-label a {
+  color: #14a800;
+  text-decoration: none;
+}
+
+.checkbox-label a:hover {
+  text-decoration: underline;
+}
+
+/* Submit Button */
+.signup-btn {
+  background: #14a800;
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.signup-btn:hover:not(:disabled) {
+  background: #0f8a00;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(20, 168, 0, 0.3);
+}
+
+.signup-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Divider */
+.signup-divider {
+  position: relative;
+  text-align: center;
+  margin: 16px 0;
+}
+
+.signup-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #e1e5ea;
+}
+
+.signup-divider span {
+  background: white;
+  padding: 0 16px;
+  color: #5a6b7c;
+  font-size: 0.85rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* Social Buttons */
+.social-signup {
+  display: flex;
+  gap: 12px;
+}
+
+.social-btn {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid #e1e5ea;
+  background: white;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #1f2c3e;
+}
+
+.social-btn i {
+  font-size: 1rem;
+}
+
+.social-btn.google:hover {
+  border-color: #db4437;
+  color: #db4437;
+}
+
+.social-btn.linkedin:hover {
+  border-color: #0077b5;
+  color: #0077b5;
+}
+
+.social-btn.github:hover {
+  border-color: #333;
+  color: #333;
+}
+
+/* Scrollbar Styling for Right Side */
+.signup-right::-webkit-scrollbar {
+  width: 8px;
+}
+
+.signup-right::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.signup-right::-webkit-scrollbar-thumb {
+  background: #14a800;
+  border-radius: 4px;
+}
+
+.signup-right::-webkit-scrollbar-thumb:hover {
+  background: #0f8a00;
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+  .signup-wrapper {
+    flex-direction: column;
+    max-width: 600px;
+  }
+  
+  .signup-left {
+    padding: 32px;
+    min-height: 300px;
+  }
+  
+  .signup-right {
+    padding: 32px;
+  }
+  
+  .signup-stats {
+    margin-top: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .signup-container {
+    padding: 20px;
+  }
+  
+  .signup-left,
+  .signup-right {
+    padding: 24px;
+  }
+  
+  .signup-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .social-signup {
+    flex-direction: column;
+  }
+  
+  .signup-testimonial p {
+    font-size: 1rem;
+  }
+}
+
+/* Animation */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.signup-right {
+  animation: slideIn 0.5s ease-out;
+}
