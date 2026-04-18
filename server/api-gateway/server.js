@@ -103,6 +103,35 @@ app.use('/api/anomaly', async (req, res) => {
         res.status(error.response?.status || 500).json(error.response?.data || { error: 'Anomaly service error' });
     }
 });
+
+// Add this with other service URLs
+const GRIEVANCE_SERVICE_URL = process.env.GRIEVANCE_SERVICE_URL || 'http://localhost:3004';
+
+// Add this before the health check
+// Forward Grievance requests
+app.use('/api/complaints', async (req, res) => {
+    try {
+        const url = `${GRIEVANCE_SERVICE_URL}${req.originalUrl}`;
+        console.log(`🔄 Forwarding grievance to: ${url}`);
+        
+        const response = await axios({
+            method: req.method,
+            url: url,
+            data: req.body,
+            headers: {
+                'Content-Type': 'application/json',
+                'Cookie': req.headers.cookie || ''
+            },
+            withCredentials: true
+        });
+        
+        res.status(response.status).json(response.data);
+    } catch (error) {
+        console.error('Grievance proxy error:', error.message);
+        res.status(error.response?.status || 500).json(error.response?.data || { error: 'Grievance service error' });
+    }
+});
+
 // Health check
 app.get('/health', (req, res) => {
     res.json({ 

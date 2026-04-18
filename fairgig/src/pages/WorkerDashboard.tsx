@@ -11,6 +11,7 @@ import AnalyticsCharts from './AnalyticsCharts';
 // import IncomeCertificate from './IncomeCertificate';
 import { type Shift, type Summary, type PlatformBreakdown, type User } from './type';
 import './WorkerDashboard.css';
+import GrievanceBoard from './GrievanceBoard';
 
 const API_GATEWAY_URL = 'http://localhost:5000';
 
@@ -100,6 +101,7 @@ const WorkerDashboard: React.FC = () => {
               userId={user?.id || 0}  // ← Pass userId for anomaly detection
             />
           )}
+          {activeTab === 'grievance' && <GrievanceBoard />}
           {/* {activeTab === 'certificate' && <IncomeCertificate user={user} summary={summary} />} } */}
         </div>
       </main>

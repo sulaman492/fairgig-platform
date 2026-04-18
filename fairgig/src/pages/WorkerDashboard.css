@@ -1894,3 +1894,145 @@ body {
     width: 100%;
   }
 }
+/* Grievance Board Styles */
+.grievance-container {
+    padding: 20px;
+}
+
+.grievance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.grievance-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.complaints-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.complaint-card {
+    display: flex;
+    gap: 16px;
+    padding: 20px;
+}
+
+.complaint-vote {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 60px;
+}
+
+.vote-btn {
+    padding: 8px;
+    background: #1E293B;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.vote-btn:hover {
+    background: #3B82F6;
+}
+
+.vote-count {
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+}
+
+.complaint-content {
+    flex: 1;
+}
+
+.complaint-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.complaint-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 8px;
+}
+
+.complaint-text {
+    color: #94A3B8;
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+
+.complaint-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: #64748B;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal {
+    background: #0F1722;
+    border-radius: 16px;
+    padding: 24px;
+    width: 90%;
+    max-width: 500px;
+    border: 1px solid #1E293B;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h3 {
+    color: white;
+}
+
+.modal form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.modal input, .modal select, .modal textarea {
+    padding: 12px;
+    background: #121821;
+    border: 1px solid #1E293B;
+    border-radius: 8px;
+    color: white;
+}
+
+.no-data {
+    text-align: center;
+    padding: 40px;
+    color: #64748B;
+}

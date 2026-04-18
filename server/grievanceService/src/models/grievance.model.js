@@ -1,0 +1,97 @@
+import { query } from '../utils/db.js';
+
+const Complaint = {
+    // Create a new complaint
+    async create(data) {
+        const result = await query(
+            `INSERT INTO complaints (user_id, platform, category, title, description, tags)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             RETURNING *`,
+            [data.user_id, data.platform, data.category, data.title, data.description, data.tags || []]
+        );
+        return result.rows[0];
+    },
+
+    // Get all complaints (for advocates)
+    async findAll(filters = {}) {
+        let queryText = `SELECT c.* FROM complaints c WHERE 1=1`;
+        let params = [];
+        let paramIndex = 1;
+        
+        if (filters.status) {
+            queryText += ` AND c.status = $${paramIndex++}`;
+            params.push(filters.status);
+        }
+        if (filters.platform) {
+            queryText += ` AND c.platform = $${paramIndex++}`;
+            params.push(filters.platform);
+        }
+        
+        queryText += ` ORDER BY c.created_at DESC`;
+        
+        const result = await query(queryText, params);
+        return result.rows;
+    },
+
+    // Get complaints by user (for workers)
+    async findByUserId(userId) {
+        const result = await query(
+            `SELECT * FROM complaints WHERE user_id = $1 ORDER BY created_at DESC`,
+            [userId]
+        );
+        return result.rows;
+    },
+
+    // Get single complaint
+    async findById(id) {
+        const result = await query(
+            `SELECT * FROM complaints WHERE id = $1`,
+            [id]
+        );
+        return result.rows[0];
+    },
+
+    // Update complaint (advocate only)
+    async update(id, data) {
+        const result = await query(
+            `UPDATE complaints 
+             SET status = COALESCE($1, status),
+                 tags = COALESCE($2, tags),
+                 cluster_id = COALESCE($3, cluster_id),
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = $4
+             RETURNING *`,
+            [data.status, data.tags, data.cluster_id, id]
+        );
+        return result.rows[0];
+    },
+
+    // Delete complaint
+    async delete(id) {
+        await query(`DELETE FROM complaints WHERE id = $1`, [id]);
+    },
+
+    // Upvote complaint
+    async upvote(id) {
+        const result = await query(
+            `UPDATE complaints SET upvotes = upvotes + 1 WHERE id = $1 RETURNING *`,
+            [id]
+        );
+        return result.rows[0];
+    },
+
+    // Get trending complaints (last 7 days)
+    async getTrending(limit = 5) {
+        const result = await query(`
+            SELECT category, COUNT(*) as count 
+            FROM complaints 
+            WHERE created_at >= NOW() - INTERVAL '7 days'
+            GROUP BY category 
+            ORDER BY count DESC 
+            LIMIT $1
+        `, [limit]);
+        return result.rows;
+    }
+};
+
+export default Complaint;

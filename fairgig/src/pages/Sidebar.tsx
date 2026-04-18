@@ -1,6 +1,6 @@
 // src/components/worker/Sidebar.tsx
 import React from 'react';
-import { Home, DollarSign, BarChart3, FileText, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Home, DollarSign, BarChart3, FileText, LogOut, ChevronLeft, ChevronRight, AlertCircle  } from 'lucide-react';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -17,7 +17,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'earnings', label: 'Earnings', icon: DollarSign },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3 },  // ← Fixed: 'Analytics' as string
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'grievance', label: 'Grievance', icon: AlertCircle },  // ← Fixed: 'Analytics' as string
     { id: 'certificate', label: 'Certificate', icon: FileText },
   ];
 
