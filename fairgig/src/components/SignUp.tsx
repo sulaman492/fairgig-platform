@@ -1,5 +1,6 @@
 // src/components/SignUp.tsx
 import React, { useState } from 'react';
+import axios from 'axios';
 import './SignUp.css';
 
 interface SignUpFormData {
@@ -18,6 +19,8 @@ interface FormErrors {
   confirmPassword?: string;
 }
 
+const API_GATEWAY_URL = 'http://localhost:5000';
+
 const SignUp: React.FC = () => {
   const [formData, setFormData] = useState<SignUpFormData>({
     fullName: '',
@@ -32,12 +35,13 @@ const SignUp: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [serverError, setServerError] = useState<string>('');
 
+  // ✅ Updated roles to match backend
   const roles = [
-    { value: 'gig_worker', label: 'Gig Worker' },
-    { value: 'employer', label: 'Employer' },
-    { value: 'advocate', label: 'Labour Advocate' },
-    { value: 'platform_admin', label: 'Platform Admin' }
+    { value: 'worker', label: 'Gig Worker' },
+    { value: 'verifier', label: 'Verifier' },
+    { value: 'advocate', label: 'Labour Advocate' }
   ];
 
   const validateForm = (): boolean => {
@@ -66,14 +70,8 @@ const SignUp: React.FC = () => {
     // Password validation
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
-    } else if (!/(?=.*[a-z])/.test(formData.password)) {
-      newErrors.password = 'Password must contain at least one lowercase letter';
-    } else if (!/(?=.*[A-Z])/.test(formData.password)) {
-      newErrors.password = 'Password must contain at least one uppercase letter';
-    } else if (!/(?=.*\d)/.test(formData.password)) {
-      newErrors.password = 'Password must contain at least one number';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
     }
 
     // Confirm Password validation
@@ -94,6 +92,10 @@ const SignUp: React.FC = () => {
     if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
     }
+    // Clear server error when user starts typing
+    if (serverError) {
+      setServerError('');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,15 +111,29 @@ const SignUp: React.FC = () => {
     }
 
     setIsLoading(true);
+    setServerError('');
 
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('Sign up data:', { ...formData, password: '***' });
-      alert('Account created successfully! Please check your email to verify your account.');
-      // Redirect to login page or dashboard
-    } catch (error) {
-      alert('An error occurred. Please try again.');
+      // ✅ Send request to API Gateway (port 5000)
+      const response = await axios.post(`${API_GATEWAY_URL}/api/auth/signup`, {
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role
+      });
+
+      if (response.data.success) {
+        alert('Account created successfully! You can now log in.');
+        // Redirect to login page
+        window.location.href = '/login';
+      }
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      if (error.response?.data?.error) {
+        setServerError(error.response.data.error);
+      } else {
+        setServerError('An error occurred. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -160,6 +176,13 @@ const SignUp: React.FC = () => {
             <h1>Create an account</h1>
             <p>Already have an account? <a href="/login">Sign in</a></p>
           </div>
+
+          {serverError && (
+            <div className="server-error">
+              <i className="fas fa-exclamation-circle"></i>
+              {serverError}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="signup-form">
             <div className="form-group">
@@ -249,7 +272,7 @@ const SignUp: React.FC = () => {
               </div>
               {errors.password && <span className="error-message">{errors.password}</span>}
               <div className="password-hint">
-                <small>Must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 number</small>
+                <small>Must be at least 6 characters</small>
               </div>
             </div>
 

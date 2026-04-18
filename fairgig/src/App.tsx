@@ -2,12 +2,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from "react-router-dom";
 import SignUp from './components/SignUp';
+import Login from './components/Login';
 import './App.css';
-
+import Dashboard from './pages/WorkerDashboard'; // Placeholder for future dashboard page
 // Placeholder components for other pages (commented implementations)
 // Uncomment and implement these when ready
 /*
-import Login from './components/Login';
+// import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Profile from './components/Profile';
 import Feed from './components/Feed';
@@ -22,13 +23,11 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/signup" element={<SignUp />} />
-          {/* Other routes - commented for now */}
-          {/* <Route path="/login" element={<Login />} /> */}
-          {/* <Route path="/dashboard" element={<Dashboard />} /> */}
-          {/* <Route path="/profile" element={<Profile />} /> */}
-          {/* <Route path="/feed" element={<Feed />} /> */}
-          {/* <Route path="/trending" element={<Trending />} /> */}
-          {/* <Route path="/settings" element={<Settings />} /> */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/worker/dashboard" element={<Dashboard />} />  {/* ← ADD THIS LINE */}
+          <Route path="/verifier/dashboard" element={<Dashboard />} />  {/* ← ADD FOR VERIFIER */}
+          <Route path="/advocate/dashboard" element={<Dashboard />} />  {/* ← ADD FOR ADVOCATE */}
         </Routes>
       </div>
     </Router>
@@ -96,9 +95,17 @@ const Navigation: React.FC = () => {
   };
 
   const handleLogin = () => {
-    // navigate('/login'); // Uncomment when login page is ready
-    alert('Login page coming soon!');
+    navigate('/login'); // Uncomment when login page is ready
+    // alert('Login page coming soon!');
   };
+  const handleDashboard = () => {
+    navigate('/dashboard'); // Uncomment when dashboard page is ready
+    // alert('Dashboard page coming soon!');
+  }
+  // const handleDashboard = () => {
+  //   navigate('/dashboard'); // Uncomment when dashboard page is ready
+  //   // alert('Dashboard page coming soon!');
+  // };
 
   return (
     <nav className="navbar">
@@ -131,7 +138,7 @@ const Navigation: React.FC = () => {
 const HeroCarousel: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
-  
+
   const slides = [
     {
       title: "Log & Verify Your Earnings",
@@ -381,7 +388,7 @@ const Footer: React.FC = () => {
               <a href="#"><i className="fab fa-instagram"></i></a>
             </div>
           </div>
-          
+
           <div id="feedback" className="footer-section">
             <h3>Quick Links</h3>
             <ul>
@@ -391,7 +398,7 @@ const Footer: React.FC = () => {
               <li><a href="#about">About Us</a></li>
             </ul>
           </div>
-          
+
           <div className="footer-section">
             <h3>Resources</h3>
             <ul>
@@ -401,7 +408,7 @@ const Footer: React.FC = () => {
               <li><a href="#">FAQ</a></li>
             </ul>
           </div>
-          
+
           <div id="contact" className="footer-section">
             <h3>Contact Us</h3>
             <ul className="contact-info">
@@ -411,7 +418,7 @@ const Footer: React.FC = () => {
             </ul>
           </div>
         </div>
-        
+
         <div className="footer-bottom">
           <p>&copy; 2026 FairGig | Gig Worker Income & Rights Platform | All Rights Reserved</p>
           <div className="feedback-form">

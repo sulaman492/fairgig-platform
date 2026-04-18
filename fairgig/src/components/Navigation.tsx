@@ -1,41 +1,23 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-
-// Import your pages
-import Login from "./Login";
-import Signup from "./Signup";
+import { useNavigate } from "react-router-dom";
 
 const Navigation: React.FC = () => {
+  const navigate = useNavigate();
+
+  // functions to change pages
+  const goHome = () => navigate("/");
+  const goLogin = () => navigate("/login");
+  const goSignup = () => navigate("/signup");
+  const goDashboard = () => navigate("/dashboard");
+
   return (
-    <Router>
-      {/* Navigation Links */}
-      <nav style={styles.nav}>
-        <Link to="/login" style={styles.link}>Login</Link>
-        <Link to="/signup" style={styles.link}>Sign Up</Link>
-      </nav>
-
-      {/* Routes */}
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-      </Routes>
-    </Router>
+    <nav style={{ padding: "10px", background: "#eee" }}>
+      <button onClick={goHome}>Home</button>
+      <button onClick={goLogin}>Login</button>
+      <button onClick={goSignup}>Signup</button>
+      <button onClick={goDashboard}>Dashboard</button>
+    </nav>
   );
-};
-
-// Simple inline styles (you can move this to CSS later)
-const styles: { [key: string]: React.CSSProperties } = {
-  nav: {
-    display: "flex",
-    gap: "20px",
-    padding: "15px",
-    background: "#f5f5f5",
-  },
-  link: {
-    textDecoration: "none",
-    color: "#333",
-    fontWeight: "bold",
-  },
 };
 
 export default Navigation;

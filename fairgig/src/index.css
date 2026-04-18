@@ -1,4 +1,7 @@
 /* App.css - Upwork Inspired Green Theme */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 * {
   margin: 0;

@@ -1,10 +1,10 @@
 import express from 'express';
-import { signUp } from '../controllers/auth.controller.js';  // ← ADD login here
+import { signUp, login, verifyToken } from '../controllers/auth.controller.js';
 
 const router = express.Router();
 
-// Sign up route
 router.post('/signup', signUp);
-//router.post('/login', login);  // ← Now login is defined
+router.post('/login', login);
+router.get('/verify', verifyToken);  // ← ADD THIS LINE
 
 export default router;
