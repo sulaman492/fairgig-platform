@@ -344,6 +344,7 @@ const ReviewsSlider: React.FC = () => {
 interface StatsSectionProps {
   statsRef: React.RefObject<HTMLElement>;
   counters: { customers: number; platforms: number; advocates: number };
+
 }
 
 const StatsSection: React.FC<StatsSectionProps> = ({ statsRef, counters }) => {
