@@ -4,16 +4,16 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Create connection pool
+// Create connection pool for Neon Cloud
 const pool = new Pool({
-    host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 5432,
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME || 'fairgig_auth',
-    max: 20, // Maximum number of clients in pool
+    connectionString: process.env.DATABASE_URL,
+    ssl: { 
+        rejectUnauthorized: false,
+        require: true
+    },
+    max: 20,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
+    connectionTimeoutMillis: 10000,  // Increased timeout
 });
 
 // Helper function for queries
@@ -32,30 +32,11 @@ export const query = async (text, params) => {
     }
 };
 
-// Get a client from pool (for transactions)
-export const getClient = async () => {
-    const client = await pool.connect();
-    const query = client.query.bind(client);
-    const release = client.release.bind(client);
-    
-    // Set timeout to release client after 5 seconds
-    const timeout = setTimeout(() => {
-        console.error('A client has been checked out for more than 5 seconds');
-    }, 5000);
-    
-    client.release = () => {
-        clearTimeout(timeout);
-        release();
-    };
-    
-    return { client, query, release: client.release };
-};
-
 // Test database connection
 export const testConnection = async () => {
     try {
         const result = await query('SELECT NOW() as time, current_database() as database');
-        console.log('✅ PostgreSQL connected successfully');
+        console.log('✅ Neon PostgreSQL connected successfully');
         console.log(`   Database: ${result.rows[0].database}`);
         console.log(`   Server time: ${result.rows[0].time}`);
         return true;
@@ -74,7 +55,7 @@ export const getPoolStats = () => {
     };
 };
 
-// Close all connections (for graceful shutdown)
+// Close all connections
 export const closePool = async () => {
     try {
         await pool.end();
@@ -84,10 +65,9 @@ export const closePool = async () => {
     }
 };
 
-// Handle unexpected errors on idle clients
+// Handle unexpected errors
 pool.on('error', (err, client) => {
     console.error('Unexpected error on idle client', err);
-    process.exit(-1);
 });
 
 export default pool;
