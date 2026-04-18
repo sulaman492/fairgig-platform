@@ -2,12 +2,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from "react-router-dom";
 import SignUp from './components/SignUp';
+import Login from './components/Login';
 import './App.css';
 
 // Placeholder components for other pages (commented implementations)
 // Uncomment and implement these when ready
 /*
-import Login from './components/Login';
+// import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Profile from './components/Profile';
 import Feed from './components/Feed';
@@ -22,6 +23,7 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/login" element={<Login />} />
           {/* Other routes - commented for now */}
           {/* <Route path="/login" element={<Login />} /> */}
           {/* <Route path="/dashboard" element={<Dashboard />} /> */}
@@ -96,8 +98,8 @@ const Navigation: React.FC = () => {
   };
 
   const handleLogin = () => {
-    // navigate('/login'); // Uncomment when login page is ready
-    alert('Login page coming soon!');
+   navigate('/login'); // Uncomment when login page is ready
+    // alert('Login page coming soon!');
   };
 
   return (
