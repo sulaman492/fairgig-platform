@@ -1,16 +1,3 @@
-<<<<<<< HEAD
-import { useState } from 'react'
-import VerifierDashboard from './components/VerifierDashboard';
-
-import './App.css'
-
-function App() {
-  
-
-  return (
-<VerifierDashboard/>
-  )
-=======
 // src/App.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from "react-router-dom";
@@ -357,7 +344,7 @@ const ReviewsSlider: React.FC = () => {
 interface StatsSectionProps {
   statsRef: React.RefObject<HTMLElement>;
   counters: { customers: number; platforms: number; advocates: number };
->>>>>>> main
+
 }
 
 const StatsSection: React.FC<StatsSectionProps> = ({ statsRef, counters }) => {
