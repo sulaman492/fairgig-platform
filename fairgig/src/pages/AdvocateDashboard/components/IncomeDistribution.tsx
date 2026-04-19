@@ -1,12 +1,22 @@
 // src/pages/AdvocateDashboard/components/IncomeDistribution.tsx
 import React from 'react';
-import { type IncomeDistribution } from '../types';
+import { type IncomeDistribution as IncomeDistributionType } from '../types';  // ← Rename type import
 
 interface IncomeDistributionProps {
-    data: IncomeDistribution[];
+    data: IncomeDistributionType[];  // ← Use renamed type
 }
 
+// ✅ This is a COMPONENT (value), not a type
 const IncomeDistribution: React.FC<IncomeDistributionProps> = ({ data }) => {
+    if (!data || data.length === 0) {
+        return (
+            <div className="card income-card">
+                <h3>Income by City</h3>
+                <p className="no-data">No income data available</p>
+            </div>
+        );
+    }
+
     return (
         <div className="card income-card">
             <h3>Income by City</h3>
@@ -22,7 +32,7 @@ const IncomeDistribution: React.FC<IncomeDistributionProps> = ({ data }) => {
                             <div className="progress-bar">
                                 <div 
                                     className="progress-fill" 
-                                    style={{ width: `${(item.avg_hourly_rate / 1000) * 100}%` }}
+                                    style={{ width: `${Math.min((item.avg_hourly_rate / 1000) * 100, 100)}%` }}
                                 />
                             </div>
                         </div>
@@ -33,4 +43,4 @@ const IncomeDistribution: React.FC<IncomeDistributionProps> = ({ data }) => {
     );
 };
 
-export default IncomeDistribution;
+export default IncomeDistribution;  // ← This exports a COMPONENT

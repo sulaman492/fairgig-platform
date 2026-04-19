@@ -10,7 +10,7 @@ import IncomeDistribution from './components/IncomeDistribution';
 import VulnerableWorkers from './components/VulnerableWorkers';
 import TopComplaints from './components/TopComplaints';
 import ComplaintsManager from './components/ComplaintsManager';
-import { NavItem } from './types';
+import { type NavItem } from './types';  // ← ADD 'type' keyword
 import './AdvocateDashboard.css';
 
 const API_GATEWAY_URL = 'http://localhost:5000';
@@ -128,7 +128,7 @@ const AdvocateDashboard: React.FC = () => {
                         <div className="workers-full">
                             <h2>All Vulnerable Workers</h2>
                             <div className="workers-table">
-                                <table>
+                                <table className="data-table">
                                     <thead>
                                         <tr>
                                             <th>Name</th>

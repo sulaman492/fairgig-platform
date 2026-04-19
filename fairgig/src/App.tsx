@@ -5,7 +5,7 @@ import SignUp from './components/SignUp';
 import Login from './components/Login';
 import './App.css';
 import Dashboard from './pages/WorkerDashboard';
-import AdvocateDashboard from './pages/AdvocateDashboard/AdvocateDashboard'; // Placeholder for future dashboard page
+// import AdvocateDashboard from './pages/AdvocateDashboard/AdvocateDashboard'; // Placeholder for future dashboard page
 // Placeholder components for other pages (commented implementations)
 // Uncomment and implement these when ready
 /*
@@ -31,7 +31,7 @@ const App: React.FC = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/worker/dashboard" element={<Dashboard />} />  {/* ← ADD THIS LINE */}
           <Route path="/verifier/dashboard" element={<VerifierDashboard />} />  {/* ← ADD FOR VERIFIER */}
-          <Route path="/advocate/dashboard" element={<AdvocateDashboard />} /> {/* ← ADD FOR ADVOCATE */}
+          {/* <Route path="/advocate/dashboard" element={<AdvocateDashboard />} /> ← ADD FOR ADVOCATE */}
         </Routes>
       </div>
     </Router>
