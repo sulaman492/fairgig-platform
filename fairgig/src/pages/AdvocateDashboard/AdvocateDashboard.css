@@ -1,0 +1,349 @@
+/* src/pages/AdvocateDashboard/AdvocateDashboard.css */
+
+.advocate-container {
+    display: flex;
+    min-height: 100vh;
+    background: #0B0F14;
+}
+
+/* Sidebar */
+.advocate-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 260px;
+    background: #0F1722;
+    border-right: 1px solid #1E293B;
+    display: flex;
+    flex-direction: column;
+    transition: width 0.3s ease;
+    z-index: 40;
+}
+
+.advocate-sidebar.collapsed {
+    width: 80px;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-bottom: 1px solid #1E293B;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logo-icon {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #8B5CF6, #3B82F6);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+}
+
+.logo-text {
+    font-size: 18px;
+    font-weight: bold;
+    background: linear-gradient(135deg, #8B5CF6, #3B82F6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.sidebar-toggle {
+    padding: 8px;
+    background: transparent;
+    border: none;
+    color: #94A3B8;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.sidebar-toggle:hover {
+    background: #1E293B;
+    color: white;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 20px 12px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    color: #94A3B8;
+    cursor: pointer;
+    border-radius: 8px;
+    width: 100%;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.nav-item:hover {
+    background: #1E293B;
+    color: white;
+}
+
+.nav-item.active {
+    background: #1E293B;
+    color: #8B5CF6;
+}
+
+.nav-item.logout {
+    color: #EF4444;
+}
+
+.nav-item.logout:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.sidebar-footer {
+    padding: 20px;
+    border-top: 1px solid #1E293B;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #8B5CF6, #3B82F6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+}
+
+.user-info .user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+}
+
+.user-info .user-tier {
+    font-size: 12px;
+    color: #64748B;
+}
+
+/* Main Content */
+.advocate-main {
+    flex: 1;
+    margin-left: 260px;
+    transition: margin-left 0.3s ease;
+}
+
+.advocate-main.expanded {
+    margin-left: 80px;
+}
+
+.advocate-header {
+    padding: 24px 32px;
+    border-bottom: 1px solid #1E293B;
+}
+
+.page-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 8px;
+}
+
+.page-subtitle {
+    color: #94A3B8;
+}
+
+.advocate-content {
+    padding: 24px 32px;
+}
+
+/* Summary Cards */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 32px;
+}
+
+.summary-card {
+    background: #121821;
+    border: 1px solid #1E293B;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.2s;
+}
+
+.summary-card:hover {
+    border-color: #8B5CF6;
+}
+
+.summary-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.summary-icon.blue { background: rgba(59, 130, 246, 0.1); color: #3B82F6; }
+.summary-icon.yellow { background: rgba(245, 158, 11, 0.1); color: #F59E0B; }
+.summary-icon.red { background: rgba(239, 68, 68, 0.1); color: #EF4444; }
+.summary-icon.green { background: rgba(34, 197, 94, 0.1); color: #22C55E; }
+
+.summary-info h3 {
+    font-size: 28px;
+    font-weight: bold;
+    color: white;
+    margin: 0;
+}
+
+.summary-info p {
+    color: #94A3B8;
+    margin: 4px 0 0;
+    font-size: 14px;
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+
+/* Cards */
+.card {
+    background: #121821;
+    border: 1px solid #1E293B;
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.card h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 16px;
+}
+
+/* Commission Trends */
+.trends-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.trend-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #0F1722;
+    border-radius: 8px;
+}
+
+.trend-item .platform {
+    font-weight: 600;
+    color: white;
+}
+
+.trend-item .rate {
+    color: #94A3B8;
+}
+
+.trend-item .change {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.trend-item .change.up { color: #EF4444; }
+.trend-item .change.down { color: #22C55E; }
+.trend-item .change.stable { color: #F59E0B; }
+
+/* Income Distribution */
+.income-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.income-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.city-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.city {
+    font-weight: 600;
+    color: white;
+}
+
+.worker-count {
+    font-size: 12px;
+    color: #64748B;
+}
+
+.earnings-info {
+    flex: 1;
+    max-width: 200px;
+}
+
+.hourly-rate {
+    font-size: 14px;
+    font-weight: 600;
+    color: #22C55E;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #1E293B;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #8B5CF6;
+    border-radius: 3px;
+    transition: width 0.3s;
+}
+
+/* Vulnerable Workers */
+.workers

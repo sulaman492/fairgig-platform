@@ -4,7 +4,8 @@ import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from "react
 import SignUp from './components/SignUp';
 import Login from './components/Login';
 import './App.css';
-import Dashboard from './pages/WorkerDashboard'; // Placeholder for future dashboard page
+import Dashboard from './pages/WorkerDashboard';
+import AdvocateDashboard from './pages/AdvocateDashboard/AdvocateDashboard'; // Placeholder for future dashboard page
 // Placeholder components for other pages (commented implementations)
 // Uncomment and implement these when ready
 /*
@@ -16,6 +17,9 @@ import Trending from './components/Trending';
 import Settings from './components/Settings';
 */
 
+
+import VerifierDashboard from './pages/verifierDashboard';
+
 const App: React.FC = () => {
   return (
     <Router>
@@ -26,8 +30,8 @@ const App: React.FC = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/worker/dashboard" element={<Dashboard />} />  {/* ← ADD THIS LINE */}
-          <Route path="/verifier/dashboard" element={<Dashboard />} />  {/* ← ADD FOR VERIFIER */}
-          <Route path="/advocate/dashboard" element={<Dashboard />} />  {/* ← ADD FOR ADVOCATE */}
+          <Route path="/verifier/dashboard" element={<VerifierDashboard />} />  {/* ← ADD FOR VERIFIER */}
+          <Route path="/advocate/dashboard" element={<AdvocateDashboard />} /> {/* ← ADD FOR ADVOCATE */}
         </Routes>
       </div>
     </Router>

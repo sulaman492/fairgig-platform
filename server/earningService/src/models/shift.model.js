@@ -1,3 +1,4 @@
+// src/models/shift.model.js
 import { query } from '../utils/db.js';
 
 const Shift = {
@@ -12,33 +13,42 @@ const Shift = {
         return result.rows[0];
     },
 
+    // ✅ NEW: Update screenshot (base64)
+    async updateScreenshot(id, screenshotBase64) {
+        const result = await query(
+            `UPDATE shifts SET screenshot_url = $1 WHERE id = $2 RETURNING *`,
+            [screenshotBase64, id]
+        );
+        return result.rows[0];
+    },
+
     // Get all shifts for a user
-    // Get all shifts for a user
-    async findByUserId(userId, dateFilter = '') {
+    async findByUserId(userId) {
         const result = await query(
             `SELECT id, user_id, platform, shift_date, hours_worked, gross_earned, 
-                platform_deductions, net_received, verification_status, created_at
-         FROM shifts 
-         WHERE user_id = $1
-         ORDER BY shift_date ASC`,  // ← ADD THIS
+                platform_deductions, net_received, verification_status, created_at, screenshot_url
+             FROM shifts 
+             WHERE user_id = $1
+             ORDER BY shift_date DESC`,
             [userId]
         );
         return result.rows;
     },
-    // Get shifts by date range for a user
-    // Get shifts by date range for a user
+
+    // Get shifts by date range
     async findByDateRange(userId, startDate, endDate) {
         const result = await query(
             `SELECT id, user_id, platform, shift_date, hours_worked, gross_earned, 
-                platform_deductions, net_received, verification_status, created_at
-         FROM shifts 
-         WHERE user_id = $1 AND shift_date BETWEEN $2 AND $3
-         ORDER BY shift_date ASC`,  // ← ADD THIS - oldest first
+                platform_deductions, net_received, verification_status, created_at, screenshot_url
+             FROM shifts 
+             WHERE user_id = $1 AND shift_date BETWEEN $2 AND $3
+             ORDER BY shift_date ASC`,
             [userId, startDate, endDate]
         );
         return result.rows;
     },
-    // Get income summary for a user
+
+    // Get income summary
     async getIncomeSummary(userId, period = 'all') {
         let dateFilter = '';
         if (period === 'week') {
@@ -64,7 +74,7 @@ const Shift = {
         return result.rows[0];
     },
 
-    // Get platform breakdown for a user
+    // Get platform breakdown
     async getPlatformBreakdown(userId, period = 'all') {
         let dateFilter = '';
         if (period === 'week') {
@@ -93,7 +103,7 @@ const Shift = {
         return result.rows;
     },
 
-    // Get all pending shifts (for verifier)
+    // Get pending shifts for verifier
     async findPending() {
         const result = await query(`
             SELECT s.*, u.name as worker_name, u.email as worker_email
@@ -101,6 +111,30 @@ const Shift = {
             JOIN users u ON s.user_id = u.id
             WHERE s.verification_status = 'pending'
             ORDER BY s.created_at ASC
+        `);
+        return result.rows;
+    },
+
+    // ✅ NEW: Get verified shifts (confirmed)
+    async findVerified() {
+        const result = await query(`
+            SELECT s.*, u.name as worker_name, u.email as worker_email
+            FROM shifts s
+            JOIN users u ON s.user_id = u.id
+            WHERE s.verification_status = 'confirmed'
+            ORDER BY s.updated_at DESC
+        `);
+        return result.rows;
+    },
+
+    // ✅ NEW: Get flagged shifts (discrepancy or unverifiable)
+    async findFlagged() {
+        const result = await query(`
+            SELECT s.*, u.name as worker_name, u.email as worker_email
+            FROM shifts s
+            JOIN users u ON s.user_id = u.id
+            WHERE s.verification_status IN ('discrepancy', 'unverifiable')
+            ORDER BY s.updated_at DESC
         `);
         return result.rows;
     },

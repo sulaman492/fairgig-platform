@@ -6,6 +6,7 @@ import Sidebar from './Sidebar';
 import StatsCards from './StatsCard';
 import RecentShifts from './RecentShifts';
 import ShiftFormDrawer from './ShiftFromDrawer';
+
 import EarningsTable from './EarningTable';
 import AnalyticsCharts from './AnalyticsCharts';
 // import IncomeCertificate from './IncomeCertificate';
@@ -52,26 +53,31 @@ const WorkerDashboard: React.FC = () => {
   };
 
   // In WorkerDashboard.tsx
-  const handleLogShift = async (shiftData: any) => {
-    console.log('Submitting shift:', shiftData);
+  // src/components/worker/WorkerDashboard.tsx (only the handleLogShift part)
+const handleLogShift = async (formData: FormData) => {
+    console.log('Submitting shift with FormData');
     try {
-      const response = await axios.post(`${API_GATEWAY_URL}/api/shifts`, shiftData, {
-        withCredentials: true
-      });
-      console.log('Response:', response.data);
+        const response = await fetch(`${API_GATEWAY_URL}/api/shifts`, {
+            method: 'POST',
+            credentials: 'include',
+            body: formData
+        });
 
-      // ✅ Close the drawer FIRST
-      setIsDrawerOpen(false);
+        const data = await response.json();
 
-      // ✅ Then refresh data
-      await fetchData();
-
-      alert('Shift logged successfully!');
+        if (response.ok && data.success) {
+            console.log('Response:', data);
+            setIsDrawerOpen(false);
+            await fetchData();
+            alert('Shift logged successfully!');
+        } else {
+            alert(data.error || 'Failed to log shift');
+        }
     } catch (error: any) {
-      console.error('Error logging shift:', error);
-      alert(error.response?.data?.error || 'Failed to log shift');
+        console.error('Error logging shift:', error);
+        alert('Network error. Please try again.');
     }
-  };
+};
   const handleLogout = async () => {
     await axios.post(`${API_GATEWAY_URL}/api/auth/logout`, {}, { withCredentials: true });
     localStorage.removeItem('user'); sessionStorage.removeItem('user');
