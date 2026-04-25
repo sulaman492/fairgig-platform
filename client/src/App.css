@@ -1,1 +1,8 @@
 @import "tailwindcss";
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  padding-top: 64px; /* offset for fixed navbar */
+}

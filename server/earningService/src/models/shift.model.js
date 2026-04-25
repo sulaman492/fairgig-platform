@@ -23,18 +23,22 @@ const Shift = {
     },
 
     // Get all shifts for a user
-    async findByUserId(userId) {
+    // Before (slow - SELECT *)
+    
+
+    // After (add LIMIT for better performance)
+    async findByUserId(userId, limit = 50) {
         const result = await query(
             `SELECT id, user_id, platform, shift_date, hours_worked, gross_earned, 
                 platform_deductions, net_received, verification_status, created_at, screenshot_url
-             FROM shifts 
-             WHERE user_id = $1
-             ORDER BY shift_date DESC`,
-            [userId]
+         FROM shifts 
+         WHERE user_id = $1
+         ORDER BY shift_date DESC
+         LIMIT $2`,
+            [userId, limit]
         );
         return result.rows;
     },
-
     // Get shifts by date range
     async findByDateRange(userId, startDate, endDate) {
         const result = await query(

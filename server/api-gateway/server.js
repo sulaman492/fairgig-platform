@@ -35,7 +35,7 @@ app.use('/api/auth', async (req, res) => {
             headers: { 'Cookie': req.headers.cookie || '' },
             withCredentials: true
         });
-        
+
         if (response.headers['set-cookie']) {
             res.setHeader('Set-Cookie', response.headers['set-cookie']);
         }
@@ -52,7 +52,7 @@ app.use('/api/shifts', async (req, res) => {
     try {
         const url = `${EARNINGS_SERVICE_URL}${req.originalUrl}`;
         console.log(`🔄 Forwarding to: ${url}`);
-        
+
         const response = await axios({
             method: req.method,
             url: url,
@@ -60,7 +60,7 @@ app.use('/api/shifts', async (req, res) => {
             headers: { 'Cookie': req.headers.cookie || '' },
             withCredentials: true
         });
-        
+
         res.status(response.status).json(response.data);
     } catch (error) {
         console.error('Earnings proxy error:', error.message);
@@ -77,19 +77,19 @@ app.get('/api/analytics/commission-trends', async (req, res) => {
     try {
         const url = `${ANALYTICS_SERVICE_URL}/api/analytics/commission-trends`;
         console.log(`🔄 Forwarding to Analytics Service: ${url}`);
-        
+
         const response = await axios({
             method: 'GET',
             url: url,
             params: req.query,
             headers: { 'Cookie': req.headers.cookie || '' }
         });
-        
+
         res.status(response.status).json(response.data);
     } catch (error) {
         console.error('Analytics proxy error:', error.message);
-        res.status(error.response?.status || 500).json({ 
-            success: false, 
+        res.status(error.response?.status || 500).json({
+            success: false,
             error: 'Analytics service unavailable',
             details: error.message
         });
@@ -101,19 +101,19 @@ app.get('/api/analytics/income-distribution', async (req, res) => {
     try {
         const url = `${ANALYTICS_SERVICE_URL}/api/analytics/income-distribution`;
         console.log(`🔄 Forwarding to Analytics Service: ${url}`);
-        
+
         const response = await axios({
             method: 'GET',
             url: url,
             params: req.query,
             headers: { 'Cookie': req.headers.cookie || '' }
         });
-        
+
         res.status(response.status).json(response.data);
     } catch (error) {
         console.error('Analytics proxy error:', error.message);
-        res.status(error.response?.status || 500).json({ 
-            success: false, 
+        res.status(error.response?.status || 500).json({
+            success: false,
             error: 'Analytics service unavailable',
             details: error.message
         });
@@ -125,19 +125,19 @@ app.get('/api/analytics/vulnerable-workers', async (req, res) => {
     try {
         const url = `${ANALYTICS_SERVICE_URL}/api/analytics/vulnerable-workers`;
         console.log(`🔄 Forwarding to Analytics Service: ${url}`);
-        
+
         const response = await axios({
             method: 'GET',
             url: url,
             params: req.query,
             headers: { 'Cookie': req.headers.cookie || '' }
         });
-        
+
         res.status(response.status).json(response.data);
     } catch (error) {
         console.error('Analytics proxy error:', error.message);
-        res.status(error.response?.status || 500).json({ 
-            success: false, 
+        res.status(error.response?.status || 500).json({
+            success: false,
             error: 'Analytics service unavailable',
             details: error.message
         });
@@ -149,19 +149,19 @@ app.get('/api/analytics/top-complaints', async (req, res) => {
     try {
         const url = `${ANALYTICS_SERVICE_URL}/api/analytics/top-complaints`;
         console.log(`🔄 Forwarding to Analytics Service: ${url}`);
-        
+
         const response = await axios({
             method: 'GET',
             url: url,
             params: req.query,
             headers: { 'Cookie': req.headers.cookie || '' }
         });
-        
+
         res.status(response.status).json(response.data);
     } catch (error) {
         console.error('Analytics proxy error:', error.message);
-        res.status(error.response?.status || 500).json({ 
-            success: false, 
+        res.status(error.response?.status || 500).json({
+            success: false,
             error: 'Analytics service unavailable',
             details: error.message
         });
@@ -173,19 +173,19 @@ app.get('/api/analytics/summary', async (req, res) => {
     try {
         const url = `${ANALYTICS_SERVICE_URL}/api/analytics/summary`;
         console.log(`🔄 Forwarding to Analytics Service: ${url}`);
-        
+
         const response = await axios({
             method: 'GET',
             url: url,
             params: req.query,
             headers: { 'Cookie': req.headers.cookie || '' }
         });
-        
+
         res.status(response.status).json(response.data);
     } catch (error) {
         console.error('Analytics proxy error:', error.message);
-        res.status(error.response?.status || 500).json({ 
-            success: false, 
+        res.status(error.response?.status || 500).json({
+            success: false,
             error: 'Analytics service unavailable',
             details: error.message
         });
@@ -206,26 +206,96 @@ app.get('/api/analytics/health', async (req, res) => {
 // ============================================
 // ANOMALY ROUTES
 // ============================================
+// ============================================
+// ANOMALY ROUTES - Forward directly to Python Anomaly Service
+// ============================================
+
+// Specific route for anomaly detection
+app.get('/api/shifts/anomalies', async (req, res) => {
+    try {
+        // Forward directly to Python anomaly service
+        const anomalyUrl = `${ANOMALY_SERVICE_URL}/api/detect-anomalies`;
+        console.log(`🔄 Forwarding anomaly request to: ${anomalyUrl}`);
+
+        // Since anomaly service expects POST with earnings data,
+        // we need to first get shifts from earnings service
+        const earningsUrl = `${EARNINGS_SERVICE_URL}/api/shifts/my`;
+        console.log(`📡 Fetching shifts from earnings service: ${earningsUrl}`);
+
+        const shiftsResponse = await axios({
+            method: 'GET',
+            url: earningsUrl,
+            headers: { 'Cookie': req.headers.cookie || '' },
+            withCredentials: true
+        });
+
+        const shifts = shiftsResponse.data.shifts || [];
+
+        if (shifts.length === 0) {
+            return res.json({
+                user_id: null,
+                anomalies: [],
+                summary: "No shifts to analyze",
+                has_anomalies: false
+            });
+        }
+
+        // Format shifts for anomaly service
+        const earningsData = shifts.map(shift => ({
+            date: shift.shift_date,
+            amount: parseFloat(shift.net_received),
+            hours_worked: parseFloat(shift.hours_worked),
+            platform: shift.platform
+        }));
+
+        // Call Python anomaly service
+        const anomalyResponse = await axios({
+            method: 'POST',
+            url: anomalyUrl,
+            data: {
+                user_id: 0, // Will be extracted from cookie if needed
+                earnings: earningsData
+            },
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        console.log(`✅ Anomaly detection complete. Found ${anomalyResponse.data.anomalies?.length || 0} anomalies`);
+        res.status(anomalyResponse.status).json(anomalyResponse.data);
+
+    } catch (error) {
+        console.error('❌ Anomaly detection error:', error.message);
+        if (error.response) {
+            console.error('Error response data:', error.response.data);
+        }
+        res.status(error.response?.status || 500).json({
+            anomalies: [],
+            summary: 'Anomaly service unavailable',
+            has_anomalies: false,
+            error: error.message
+        });
+    }
+});
+
+// Alternative: Direct proxy for anomaly service (if you want to forward all /api/anomaly/*)
 app.use('/api/anomaly', async (req, res) => {
     try {
         const path = req.originalUrl.replace('/api/anomaly', '/api');
         const url = `${ANOMALY_SERVICE_URL}${path}`;
-        console.log('🔄 Forwarding anomaly to:', url);
-        
+        console.log(`🔄 Forwarding to anomaly service: ${url}`);
+
         const response = await axios({
             method: req.method,
             url: url,
             data: req.body,
             headers: { 'Content-Type': 'application/json' }
         });
-        
+
         res.status(response.status).json(response.data);
     } catch (error) {
         console.error('Anomaly proxy error:', error.message);
         res.status(error.response?.status || 500).json(error.response?.data || { error: 'Anomaly service error' });
     }
 });
-
 // ============================================
 // GRIEVANCE ROUTES
 // ============================================
@@ -233,7 +303,7 @@ app.use('/api/complaints', async (req, res) => {
     try {
         const url = `${GRIEVANCE_SERVICE_URL}${req.originalUrl}`;
         console.log(`🔄 Forwarding grievance to: ${url}`);
-        
+
         const response = await axios({
             method: req.method,
             url: url,
@@ -244,7 +314,7 @@ app.use('/api/complaints', async (req, res) => {
             },
             withCredentials: true
         });
-        
+
         res.status(response.status).json(response.data);
     } catch (error) {
         console.error('Grievance proxy error:', error.message);
@@ -256,8 +326,8 @@ app.use('/api/complaints', async (req, res) => {
 // HEALTH CHECK
 // ============================================
 app.get('/health', (req, res) => {
-    res.json({ 
-        status: 'OK', 
+    res.json({
+        status: 'OK',
         services: {
             auth: AUTH_SERVICE_URL,
             earnings: EARNINGS_SERVICE_URL,

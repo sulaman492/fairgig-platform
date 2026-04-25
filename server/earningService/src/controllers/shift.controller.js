@@ -9,8 +9,8 @@ export const createShift = async (req, res) => {
             return res.status(403).json({ error: 'Only workers can log shifts' });
         }
 
-        const { platform, shift_date, hours_worked, gross_earned, 
-                platform_deductions, net_received, screenshot } = req.body;
+        const { platform, shift_date, hours_worked, gross_earned,
+            platform_deductions, net_received, screenshot } = req.body;
 
         // Validate required fields
         if (!platform || !shift_date || !hours_worked || !gross_earned || !platform_deductions || !net_received) {
@@ -59,9 +59,9 @@ export const createShift = async (req, res) => {
         res.status(201).json({
             success: true,
             message: 'Shift logged successfully',
-            shift: { 
-                ...shift, 
-                screenshot_url: screenshot ? 'saved' : null 
+            shift: {
+                ...shift,
+                screenshot_url: screenshot ? 'saved' : null
             }
         });
 
@@ -117,18 +117,18 @@ export const getMyShifts = async (req, res) => {
 export const getShiftsByDateRange = async (req, res) => {
     try {
         const { start_date, end_date } = req.query;
-        
+
         if (!start_date || !end_date) {
             return res.status(400).json({ error: 'Start date and end date are required' });
         }
-        
+
         const shifts = await Shift.findByDateRange(req.user.id, start_date, end_date);
-        
+
         res.json({
             success: true,
             shifts: shifts
         });
-        
+
     } catch (error) {
         console.error('Date range error:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -136,6 +136,12 @@ export const getShiftsByDateRange = async (req, res) => {
 };
 
 // Get income summary
+// server/earningService/src/controllers/shift.controller.js
+
+let summaryCache = null;
+let lastCacheTime = null;
+const CACHE_TTL = 60000; // 60 seconds
+
 export const getIncomeSummary = async (req, res) => {
     try {
         if (req.user.role !== 'worker') {
@@ -144,20 +150,35 @@ export const getIncomeSummary = async (req, res) => {
 
         const { period = 'all' } = req.query;
 
+        // Check cache
+        const now = Date.now();
+        if (summaryCache && lastCacheTime && (now - lastCacheTime) < CACHE_TTL) {
+            console.log('📦 Returning cached summary');
+            return res.json({
+                success: true,
+                period,
+                summary: summaryCache
+            });
+        }
+
         const summary = await Shift.getIncomeSummary(req.user.id, period);
         const platformBreakdown = await Shift.getPlatformBreakdown(req.user.id, period);
+
+        // Update cache
+        summaryCache = {
+            total_gross: parseFloat(summary.total_gross),
+            total_deductions: parseFloat(summary.total_deductions),
+            total_net: parseFloat(summary.total_net),
+            total_hours: parseFloat(summary.total_hours),
+            total_shifts: parseInt(summary.total_shifts),
+            avg_hourly_rate: parseFloat(summary.avg_hourly_rate)
+        };
+        lastCacheTime = now;
 
         res.json({
             success: true,
             period,
-            summary: {
-                total_gross: parseFloat(summary.total_gross),
-                total_deductions: parseFloat(summary.total_deductions),
-                total_net: parseFloat(summary.total_net),
-                total_hours: parseFloat(summary.total_hours),
-                total_shifts: parseInt(summary.total_shifts),
-                avg_hourly_rate: parseFloat(summary.avg_hourly_rate)
-            },
+            summary: summaryCache,
             platform_breakdown: platformBreakdown
         });
 
