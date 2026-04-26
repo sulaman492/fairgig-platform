@@ -6,6 +6,7 @@ import EarningsLogger from '../components/Dashboard/EarningsLogger';
 import Analytics from '../components/Dashboard/Analytics';
 import DashboardOverview from '../components/Dashboard/DashboardOverview'; // ← IMPORT
 import { authApi } from '../lib/authApi';
+import CertificateGenerator from '../components/Dashboard/CertificateGenerator';
 
 const dashboardItems = [
   {
@@ -22,12 +23,7 @@ const dashboardItems = [
     id: 'analytics',
     label: 'Analytics',
     icon: BarChart3,
-  },
-  {
-    id: 'certificate',
-    label: 'Certificate',
-    icon: FileBadge2,
-  },
+  }, { id: 'certificate', label: 'Certificate', icon: FileBadge2 },
   {
     id: 'grievance',
     label: 'Grievance',
@@ -103,11 +99,10 @@ const Dashboard = () => {
                       key={item.id}
                       type="button"
                       onClick={() => setActiveItem(item.id)}
-                      className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition ${
-                        isActive
+                      className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition ${isActive
                           ? 'bg-slate-950 text-white'
                           : 'bg-transparent text-slate-800 hover:bg-slate-100'
-                      }`}
+                        }`}
                     >
                       <Icon className="h-5 w-5 shrink-0" />
                       <span>{item.label}</span>
@@ -134,11 +129,7 @@ const Dashboard = () => {
               {activeItem === 'dashboard' && <DashboardOverview />}
               {activeItem === 'earnings' && <EarningsLogger />}
               {activeItem === 'analytics' && <Analytics />}
-              {activeItem === 'certificate' && (
-                <div className="flex h-full min-h-[520px] items-center justify-center border border-dashed border-slate-300 bg-white/20">
-                  <p className="text-sm font-medium text-slate-500">Income Certificate Coming Soon</p>
-                </div>
-              )}
+              {activeItem === 'certificate' && <CertificateGenerator />}
               {activeItem === 'grievance' && (
                 <div className="flex h-full min-h-[520px] items-center justify-center border border-dashed border-slate-300 bg-white/20">
                   <p className="text-sm font-medium text-slate-500">Grievance Board Coming Soon</p>

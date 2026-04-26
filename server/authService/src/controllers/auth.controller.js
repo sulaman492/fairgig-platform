@@ -216,7 +216,22 @@ export const logout = async (req, res) => {
     });
 };
 
-// Get current user from access token
+// Verify token middleware for other services
+export const verifyToken = async (req, res) => {
+    const accessToken = req.cookies.accessToken;
+    
+    if (!accessToken) {
+        return res.status(401).json({ valid: false, error: 'No token provided' });
+    }
+    
+    try {
+        const decoded = jwt.verify(accessToken, ACCESS_SECRET);
+        res.json({ valid: true, user: decoded });
+    } catch (error) {
+        res.status(401).json({ valid: false, error: error.message });
+    }
+};
+// Add this function after your existing functions
 export const getMe = async (req, res) => {
     const accessToken = req.cookies.accessToken;
     
@@ -232,27 +247,21 @@ export const getMe = async (req, res) => {
             return res.status(401).json({ error: 'User not found' });
         }
         
-        res.status(200).json({ user });
+        // Return user info (exclude sensitive data)
+        res.status(200).json({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            city: user.city,
+            created_at: user.created_at
+        });
+        
     } catch (error) {
         if (error.name === 'TokenExpiredError') {
             return res.status(401).json({ error: 'Access token expired', expired: true });
         }
+        console.error('GetMe error:', error);
         res.status(401).json({ error: 'Invalid token' });
-    }
-};
-
-// Verify token middleware for other services
-export const verifyToken = async (req, res) => {
-    const accessToken = req.cookies.accessToken;
-    
-    if (!accessToken) {
-        return res.status(401).json({ valid: false, error: 'No token provided' });
-    }
-    
-    try {
-        const decoded = jwt.verify(accessToken, ACCESS_SECRET);
-        res.json({ valid: true, user: decoded });
-    } catch (error) {
-        res.status(401).json({ valid: false, error: error.message });
     }
 };
