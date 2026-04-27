@@ -13,42 +13,83 @@ const Complaint = {
     },
 
     // Get all complaints (for advocates)
-    async findAll(filters = {}) {
+    // Update findAll method in Complaint object
+    async findAll(filters = {}, page = 1, limit = 20) {
+        const offset = (page - 1) * limit;
         let queryText = `SELECT c.* FROM complaints c WHERE 1=1`;
+        let countText = `SELECT COUNT(*) as total FROM complaints c WHERE 1=1`;
         let params = [];
         let paramIndex = 1;
-        
+
+        // Add filters
         if (filters.status) {
-            queryText += ` AND c.status = $${paramIndex++}`;
+            queryText += ` AND c.status = $${paramIndex}`;
+            countText += ` AND c.status = $${paramIndex}`;
             params.push(filters.status);
+            paramIndex++;
         }
         if (filters.platform) {
-            queryText += ` AND c.platform = $${paramIndex++}`;
+            queryText += ` AND c.platform = $${paramIndex}`;
+            countText += ` AND c.platform = $${paramIndex}`;
             params.push(filters.platform);
+            paramIndex++;
         }
-        
-        queryText += ` ORDER BY c.created_at DESC`;
-        
+
+        // Add sorting and pagination
+        queryText += ` ORDER BY c.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+        params.push(limit, offset);
+
+        // Execute queries
         const result = await query(queryText, params);
-        return result.rows;
+        const countResult = await query(countText, params.slice(0, paramIndex - 1));
+
+        const total = parseInt(countResult.rows[0].total);
+        const totalPages = Math.ceil(total / limit);
+
+        return {
+            data: result.rows,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total: total,
+                totalPages: totalPages,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1
+            }
+        };
     },
 
-    // Get complaints by user (for workers)
-    async findByUserId(userId) {
+    // Add pagination to findByUserId
+    async findByUserId(userId, page = 1, limit = 20) {
+        const offset = (page - 1) * limit;
+
         const result = await query(
-            `SELECT * FROM complaints WHERE user_id = $1 ORDER BY created_at DESC`,
+            `SELECT * FROM complaints 
+         WHERE user_id = $1 
+         ORDER BY created_at DESC 
+         LIMIT $2 OFFSET $3`,
+            [userId, limit, offset]
+        );
+
+        const countResult = await query(
+            `SELECT COUNT(*) as total FROM complaints WHERE user_id = $1`,
             [userId]
         );
-        return result.rows;
-    },
 
-    // Get single complaint
-    async findById(id) {
-        const result = await query(
-            `SELECT * FROM complaints WHERE id = $1`,
-            [id]
-        );
-        return result.rows[0];
+        const total = parseInt(countResult.rows[0].total);
+        const totalPages = Math.ceil(total / limit);
+
+        return {
+            data: result.rows,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total: total,
+                totalPages: totalPages,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1
+            }
+        };
     },
 
     // Update complaint (advocate only)
@@ -91,7 +132,42 @@ const Complaint = {
             LIMIT $1
         `, [limit]);
         return result.rows;
-    }
+    },
+    // Add to Complaint object
+    async getCommunityBulletin(page = 1, limit = 20) {
+        const offset = (page - 1) * limit;
+
+        const result = await query(`
+        SELECT id, platform, category, title, description, 
+               upvotes, status, created_at,
+               'Anonymous' as user_name,
+               NULL as user_id
+        FROM complaints 
+        WHERE status != 'deleted'
+        ORDER BY upvotes DESC, created_at DESC
+        LIMIT $1 OFFSET $2
+    `, [limit, offset]);
+
+        const countResult = await query(`
+        SELECT COUNT(*) as total FROM complaints WHERE status != 'deleted'
+    `);
+
+        const total = parseInt(countResult.rows[0].total);
+        const totalPages = Math.ceil(total / limit);
+
+        return {
+            data: result.rows,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total: total,
+                totalPages: totalPages,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1
+            }
+        };
+    },
 };
+
 
 export default Complaint;

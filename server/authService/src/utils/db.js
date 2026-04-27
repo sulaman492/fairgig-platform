@@ -7,13 +7,12 @@ dotenv.config();
 // Create connection pool for Neon Cloud
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: { 
-        rejectUnauthorized: false,
-        require: true
-    },
+    ssl: process.env.NODE_ENV === 'production' 
+        ? { rejectUnauthorized: false }  // For production (Render/Neon)
+        : false,  // For local development
     max: 20,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000,  // Increased timeout
+    connectionTimeoutMillis: 10000,
 });
 
 // Helper function for queries

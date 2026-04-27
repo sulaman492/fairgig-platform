@@ -7,6 +7,7 @@ import Analytics from '../components/Dashboard/Analytics';
 import DashboardOverview from '../components/Dashboard/DashboardOverview'; // ← IMPORT
 import { authApi } from '../lib/authApi';
 import CertificateGenerator from '../components/Dashboard/CertificateGenerator';
+import GrievanceBoard from '../components/Grievance/GrievanceBoard';
 
 const dashboardItems = [
   {
@@ -130,11 +131,7 @@ const Dashboard = () => {
               {activeItem === 'earnings' && <EarningsLogger />}
               {activeItem === 'analytics' && <Analytics />}
               {activeItem === 'certificate' && <CertificateGenerator />}
-              {activeItem === 'grievance' && (
-                <div className="flex h-full min-h-[520px] items-center justify-center border border-dashed border-slate-300 bg-white/20">
-                  <p className="text-sm font-medium text-slate-500">Grievance Board Coming Soon</p>
-                </div>
-              )}
+              {activeItem === 'grievance' && <GrievanceBoard/>}
             </section>
           </div>
         </section>

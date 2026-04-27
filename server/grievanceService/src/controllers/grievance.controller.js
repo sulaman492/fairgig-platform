@@ -1,6 +1,6 @@
 // src/controllers/grievanceController.js
 import Complaint from '../models/grievance.model.js';
-
+import { query } from '../utils/db.js';
 // Worker: Create a complaint
 export const createComplaint = async (req, res) => {
     try {
@@ -27,28 +27,63 @@ export const createComplaint = async (req, res) => {
 };
 
 // Worker: Get my complaints
+// Update getMyComplaints
 export const getMyComplaints = async (req, res) => {
     try {
-        const complaints = await Complaint.findByUserId(req.user.id);
-        res.json({ success: true, complaints });
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        
+        const result = await Complaint.findByUserId(req.user.id, page, limit);
+        
+        res.json({ 
+            success: true, 
+            complaints: result.data,
+            pagination: result.pagination
+        });
     } catch (error) {
         console.error('Get complaints error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 };
 
-// Advocate: Get all complaints
+// Update getAllComplaints
 export const getAllComplaints = async (req, res) => {
     try {
         const { status, platform } = req.query;
-        const complaints = await Complaint.findAll({ status, platform });
-        res.json({ success: true, complaints });
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        
+        const result = await Complaint.findAll({ status, platform }, page, limit);
+        
+        res.json({ 
+            success: true, 
+            complaints: result.data,
+            pagination: result.pagination
+        });
     } catch (error) {
         console.error('Get all complaints error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 };
 
+// Update getCommunityBulletin
+export const getCommunityBulletin = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        
+        const result = await Complaint.getCommunityBulletin(page, limit);
+        
+        res.json({ 
+            success: true, 
+            complaints: result.data,
+            pagination: result.pagination
+        });
+    } catch (error) {
+        console.error('Community bulletin error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
 // Advocate: Get single complaint
 export const getComplaintById = async (req, res) => {
     try {

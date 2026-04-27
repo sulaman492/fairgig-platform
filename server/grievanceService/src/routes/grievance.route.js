@@ -9,7 +9,8 @@ import {
     updateComplaint,
     deleteComplaint,
     upvoteComplaint,
-    getTrending
+    getTrending,
+    getCommunityBulletin
 } from '../controllers/grievance.controller.js';
 
 const router = express.Router();
@@ -18,6 +19,7 @@ const router = express.Router();
 router.post('/', verifyToken, requireRole(['worker']), createComplaint);
 router.get('/my', verifyToken, requireRole(['worker']), getMyComplaints);
 router.post('/:id/upvote', verifyToken, requireRole(['worker']), upvoteComplaint);
+router.get('/community', verifyToken, requireRole(['worker']), getCommunityBulletin);
 
 // Advocate routes
 router.get('/', verifyToken, requireRole(['advocate']), getAllComplaints);
