@@ -4,7 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import shiftRoutes from './src/routes/shifts.route.js';
 import analyticsRoutes from './src/routes/shifts.analytics.route.js';
-import { authenticate } from './src/middleware/auth.middleware.js';
+import { authenticate } from './src/middlewares/auth.middleware.js';
 
 const app = express();
 
