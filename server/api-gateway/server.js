@@ -54,6 +54,7 @@ app.get('/health', (req, res) => {
 });
 
 // Login - Public
+// Login - Public
 app.post('/api/auth/login', async (req, res) => {
     try {
         const url = `${AUTH_SERVICE_URL}/api/auth/login`;
@@ -61,18 +62,31 @@ app.post('/api/auth/login', async (req, res) => {
             method: 'POST',
             url: url,
             data: req.body,
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
+            withCredentials: true  // Add this
         });
         
-        if (response.headers['set-cookie']) {
-            res.setHeader('Set-Cookie', response.headers['set-cookie']);
+        // Forward all cookies, not just the first one
+        const setCookieHeaders = response.headers['set-cookie'];
+        if (setCookieHeaders) {
+            // Handle both single cookie and array of cookies
+            const cookies = Array.isArray(setCookieHeaders) ? setCookieHeaders : [setCookieHeaders];
+            cookies.forEach(cookie => {
+                res.append('Set-Cookie', cookie);
+            });
+            console.log(`✅ Forwarded ${cookies.length} cookie(s)`);
+        } else {
+            console.log('❌ No Set-Cookie headers from Auth Service');
         }
+        
         res.status(response.status).json(response.data);
     } catch (error) {
+        console.error('Login error:', error.message);
         res.status(error.response?.status || 500).json(error.response?.data || { error: 'Login failed' });
     }
 });
 
+// Signup - Public
 // Signup - Public
 app.post('/api/auth/signup', async (req, res) => {
     try {
@@ -81,8 +95,18 @@ app.post('/api/auth/signup', async (req, res) => {
             method: 'POST',
             url: url,
             data: req.body,
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
+            withCredentials: true  // Add this
         });
+        
+        const setCookieHeaders = response.headers['set-cookie'];
+        if (setCookieHeaders) {
+            const cookies = Array.isArray(setCookieHeaders) ? setCookieHeaders : [setCookieHeaders];
+            cookies.forEach(cookie => {
+                res.append('Set-Cookie', cookie);
+            });
+        }
+        
         res.status(response.status).json(response.data);
     } catch (error) {
         res.status(error.response?.status || 500).json(error.response?.data || { error: 'Signup failed' });
