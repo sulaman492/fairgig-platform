@@ -5,6 +5,7 @@ import Pagination from '../common/Pagination';
 import LoadingSpinner from '../common/LoadingSpinner';
 import { MessageCircle } from 'lucide-react';
 
+
 export default function MyComplaints() {
     const [complaints, setComplaints] = useState([]);
     const [loading, setLoading] = useState(true);
