@@ -167,6 +167,13 @@ const Complaint = {
             }
         };
     },
+    async findById(id) {
+        const result = await query(
+            `SELECT * FROM complaints WHERE id = $1`,
+            [id]
+        );
+        return result.rows[0];
+    },
 };
 
 

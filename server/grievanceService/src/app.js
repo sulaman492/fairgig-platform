@@ -8,13 +8,17 @@ const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
+
+// CORS should only allow API Gateway, not frontend directly!
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: process.env.API_GATEWAY_URL ,  // ← API Gateway only!
     credentials: true
 }));
 
+// Routes - only accessible via API Gateway
 app.use('/api/complaints', grievanceRoutes);
 
+// Health check (internal)
 app.get('/health', (req, res) => {
     res.json({ status: 'OK', service: 'grievance-service' });
 });

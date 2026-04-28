@@ -1,6 +1,6 @@
 // src/routes/grievance.route.js
 import express from 'express';
-import { verifyToken, requireRole } from '../middlewares/auth.middleware.js';
+import { verifyToken, requireRole } from '../middlewares/auth.middleware.js';  // ← Fix path (singular 'middleware')
 import {
     createComplaint,
     getMyComplaints,

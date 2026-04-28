@@ -307,18 +307,39 @@ app.use('/api/analytics', authenticateGateway, requireRole(['advocate']), async 
 });
 
 // Direct anomaly proxy - Worker or Advocate
+// Direct anomaly proxy - Worker or Advocate
 app.use('/api/anomaly', authenticateGateway, requireRole(['worker', 'advocate']), async (req, res) => {
     try {
         const path = req.originalUrl.replace('/api/anomaly', '/api');
         const url = `${ANOMALY_SERVICE_URL}${path}`;
+        
+        // ✅ Extract token from cookie OR Authorization header
+        let token = req.cookies?.accessToken;
+        
+        if (!token && req.headers.authorization) {
+            const authHeader = req.headers.authorization;
+            if (authHeader.startsWith('Bearer ')) {
+                token = authHeader.substring(7);
+            }
+        }
+        
+        // ✅ Prepare Authorization header for anomaly service
+        const authHeaderValue = token ? `Bearer ${token}` : '';
+        
         const response = await axios({
             method: req.method,
             url: url,
             data: req.body,
-            headers: { 'Content-Type': 'application/json' }
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': authHeaderValue,  // ✅ Now defined!
+                'Cookie': req.headers.cookie || ''
+            }
         });
+        
         res.status(response.status).json(response.data);
     } catch (error) {
+        console.error('Anomaly proxy error:', error.message);
         res.status(error.response?.status || 500).json(error.response?.data || { error: 'Anomaly service error' });
     }
 });

@@ -1,4 +1,4 @@
-// routes/certificate.js
+// server/certificateService/routes/certificate.js
 import express from 'express';
 import { prepareCertificateData } from '../services/calculator.js';
 import { generateCertificateHTML } from '../templates/certificate.html.js';
@@ -7,6 +7,11 @@ const router = express.Router();
 
 router.post('/generate', async (req, res) => {
     try {
+        // req.user is set by authenticate middleware
+        if (!req.user) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+        
         const { 
             workerName, 
             workerId, 
@@ -36,7 +41,7 @@ router.post('/generate', async (req, res) => {
         // Generate HTML
         const html = generateCertificateHTML({
             workerName: workerName || 'Gig Worker',
-            workerId: workerId || 'N/A',
+            workerId: workerId || `WK-${req.user.id}`,
             cnic: cnic || 'Not Provided',
             startDate,
             endDate,
