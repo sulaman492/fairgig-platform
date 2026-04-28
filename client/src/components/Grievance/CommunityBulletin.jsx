@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { authApi } from '../../lib/authApi';
 import ComplaintCard from './ComplaintCard';
-import Pagination from '../common/Pagination';
+import Pagination from '../common/pagination';
 import LoadingSpinner from '../common/LoadingSpinner';
 import { TrendingUp, Flame, Clock, Award } from 'lucide-react';
 
