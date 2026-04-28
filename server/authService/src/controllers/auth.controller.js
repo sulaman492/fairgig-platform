@@ -31,31 +31,40 @@ console.log(`   Refresh Token Expiry: ${REFRESH_TOKEN_EXPIRY}`);
 const generateTokens = (user) => {
     const accessToken = jwt.sign(
         { id: user.id, email: user.email, name: user.name, role: user.role },
-        ACCESS_SECRET,  // No fallback!
+        ACCESS_SECRET,
         { expiresIn: ACCESS_TOKEN_EXPIRY }
     );
     
     const refreshToken = jwt.sign(
         { id: user.id, email: user.email },
-        REFRESH_SECRET,  // No fallback!
+        REFRESH_SECRET,
         { expiresIn: REFRESH_TOKEN_EXPIRY }
     );
     
     return { accessToken, refreshToken };
 };
 
-// Helper function to set cookies
+// Helper function to set cookies - FIXED DOMAIN
 const setTokenCookies = (res, accessToken, refreshToken) => {
     const isProduction = process.env.NODE_ENV === 'production';
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    
+    // For Render.com, use .onrender.com domain
+    // For localhost, don't set domain (undefined)
+    let cookieDomain = undefined;
+    if (isProduction) {
+        cookieDomain = '.onrender.com';
+    }
+    
+    console.log(`🍪 Setting cookies - Production: ${isProduction}, Domain: ${cookieDomain || 'none'}`);
     
     // Access token cookie - 15 minutes
     res.cookie('accessToken', accessToken, {
         httpOnly: true,
-        secure: isProduction,  // true in production
-        sameSite: isProduction ? 'none' : 'lax',  // 'none' for cross-site in production
-        domain: isProduction ? '.yourdomain.com' : undefined,
-        maxAge: 15 * 60 * 1000
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
+        domain: cookieDomain,
+        maxAge: 15 * 60 * 1000,
+        path: '/'
     });
     
     // Refresh token cookie - 7 days
@@ -63,8 +72,9 @@ const setTokenCookies = (res, accessToken, refreshToken) => {
         httpOnly: true,
         secure: isProduction,
         sameSite: isProduction ? 'none' : 'lax',
-        domain: isProduction ? '.yourdomain.com' : undefined,
-        maxAge: 7 * 24 * 60 * 60 * 1000
+        domain: cookieDomain,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        path: '/'
     });
 };
 
@@ -157,7 +167,7 @@ export const getMe = async (req, res) => {
     }
 };
 
-// Refresh access token
+// Refresh access token - FIXED DOMAIN
 export const refreshAccessToken = async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
     
@@ -186,11 +196,17 @@ export const refreshAccessToken = async (req, res) => {
             { expiresIn: ACCESS_TOKEN_EXPIRY }
         );
         
+        // Use same cookie settings
+        const isProduction = process.env.NODE_ENV === 'production';
+        const cookieDomain = isProduction ? '.onrender.com' : undefined;
+        
         res.cookie('accessToken', newAccessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            maxAge: 15 * 60 * 1000
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax',
+            domain: cookieDomain,
+            maxAge: 15 * 60 * 1000,
+            path: '/'
         });
         
         res.status(200).json({
@@ -204,7 +220,7 @@ export const refreshAccessToken = async (req, res) => {
     }
 };
 
-// Logout
+// Logout - FIXED DOMAIN
 export const logout = async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
     
@@ -212,8 +228,11 @@ export const logout = async (req, res) => {
         await User.revokeRefreshToken(refreshToken);
     }
     
-    res.clearCookie('accessToken');
-    res.clearCookie('refreshToken');
+    const isProduction = process.env.NODE_ENV === 'production';
+    const cookieDomain = isProduction ? '.onrender.com' : undefined;
+    
+    res.clearCookie('accessToken', { domain: cookieDomain, path: '/' });
+    res.clearCookie('refreshToken', { domain: cookieDomain, path: '/' });
     
     res.status(200).json({
         success: true,
@@ -224,12 +243,10 @@ export const logout = async (req, res) => {
 // Helper to extract public_id from Cloudinary URL
 const extractPublicId = (url) => {
     if (!url) return null;
-    // Example URL: https://res.cloudinary.com/cloud-name/image/upload/v123456/fairgig/profiles/avatar-123.jpg
     const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.\w+$/);
     return match ? match[1] : null;
 };
 
-// Upload profile picture to Cloudinary
 // Upload profile picture to Cloudinary
 export const uploadProfilePicture = async (req, res) => {
     console.log('📸 Auth Service: uploadProfilePicture START');
@@ -315,7 +332,7 @@ export const uploadProfilePicture = async (req, res) => {
         res.status(500).json({ error: 'Failed to upload profile picture', details: error.message });
     }
 };
-// Delete profile picture from Cloudinary
+
 // Delete profile picture from Cloudinary
 export const deleteProfilePicture = async (req, res) => {
     try {
