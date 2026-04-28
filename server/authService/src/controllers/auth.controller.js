@@ -1,6 +1,9 @@
 import User from '../models/auth.model.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import cloudinary from '../utils/cloudinary.js';
+import fs from 'fs';
+import { log } from 'console';
 
 dotenv.config();
 
@@ -216,22 +219,6 @@ export const logout = async (req, res) => {
     });
 };
 
-// Verify token middleware for other services
-export const verifyToken = async (req, res) => {
-    const accessToken = req.cookies.accessToken;
-    
-    if (!accessToken) {
-        return res.status(401).json({ valid: false, error: 'No token provided' });
-    }
-    
-    try {
-        const decoded = jwt.verify(accessToken, ACCESS_SECRET);
-        res.json({ valid: true, user: decoded });
-    } catch (error) {
-        res.status(401).json({ valid: false, error: error.message });
-    }
-};
-// Add this function after your existing functions
 export const getMe = async (req, res) => {
     const accessToken = req.cookies.accessToken;
     
@@ -263,5 +250,146 @@ export const getMe = async (req, res) => {
         }
         console.error('GetMe error:', error);
         res.status(401).json({ error: 'Invalid token' });
+    }
+};
+
+// Helper to extract public_id from Cloudinary URL
+const extractPublicId = (url) => {
+    if (!url) return null;
+    // Example URL: https://res.cloudinary.com/cloud-name/image/upload/v123456/fairgig/profiles/avatar-123.jpg
+    const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.\w+$/);
+    return match ? match[1] : null;
+};
+
+// Upload profile picture to Cloudinary
+// Upload profile picture to Cloudinary
+export const uploadProfilePicture = async (req, res) => {
+    console.log('📸 Auth Service: uploadProfilePicture START');
+    console.log("controller hit")
+    console.log('req.file:', req.file);
+    console.log('req.body:', req.body);
+    console.log('req.user:', req.user);
+    
+    try {
+        if (!req.file) {
+            console.log('❌ No file in request - req.file is undefined');
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        console.log('✅ File received:', req.file.originalname);
+        console.log('📁 Local file path:', req.file.path);
+        console.log('📏 File size:', req.file.size);
+        console.log('📝 File mimetype:', req.file.mimetype);
+
+        const userId = req.user.id;
+        console.log('👤 User ID:', userId);
+        
+        // Get current user to delete old image from Cloudinary
+        const currentUser = await User.findByIdWithAvatar(userId);
+        
+        // Delete old profile picture from Cloudinary if exists
+        if (currentUser.profile_picture) {
+            const oldPublicId = extractPublicId(currentUser.profile_picture);
+            if (oldPublicId) {
+                try {
+                    await cloudinary.uploader.destroy(oldPublicId);
+                    console.log(`🗑️ Deleted old Cloudinary image: ${oldPublicId}`);
+                } catch (err) {
+                    console.error('Failed to delete old Cloudinary image:', err.message);
+                }
+            }
+        }
+        
+        // Upload to Cloudinary
+        console.log('☁️ Uploading to Cloudinary...');
+        const cloudinaryResult = await cloudinary.uploader.upload(req.file.path, {
+            folder: 'fairgig/profiles',
+            transformation: [{ width: 300, height: 300, crop: 'fill' }]
+        });
+        
+        console.log('✅ Cloudinary upload successful:', cloudinaryResult.secure_url);
+        
+        // Delete local file after successful Cloudinary upload
+        try {
+            fs.unlinkSync(req.file.path);
+            console.log('🗑️ Deleted local file:', req.file.path);
+        } catch (err) {
+            console.error('Failed to delete local file:', err.message);
+        }
+        
+        const imageUrl = cloudinaryResult.secure_url;
+        console.log('📷 Final Image URL:', imageUrl);
+
+        // Update database
+        const updatedUser = await User.updateProfilePicture(userId, imageUrl);
+        
+        console.log('💾 Database updated:', updatedUser);
+
+        res.json({
+            success: true,
+            message: 'Profile picture updated successfully',
+            profile_picture: updatedUser.profile_picture
+        });
+        
+    } catch (error) {
+        console.error('❌ Upload error:', error);
+        
+        // Clean up local file if upload failed
+        if (req.file && req.file.path) {
+            try {
+                fs.unlinkSync(req.file.path);
+                console.log('🗑️ Cleaned up local file after error:', req.file.path);
+            } catch (err) {
+                console.error('Failed to delete local file after error:', err.message);
+            }
+        }
+        
+        res.status(500).json({ error: 'Failed to upload profile picture', details: error.message });
+    }
+};
+// Delete profile picture from Cloudinary
+// Delete profile picture from Cloudinary
+export const deleteProfilePicture = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        
+        // Get current user
+        const user = await User.findByIdWithAvatar(userId);
+        
+        if (user.profile_picture) {
+            const publicId = extractPublicId(user.profile_picture);
+            if (publicId) {
+                // Delete from Cloudinary only (no local file to delete)
+                await cloudinary.uploader.destroy(publicId);
+                console.log(`🗑️ Deleted Cloudinary profile picture: ${publicId}`);
+            }
+        }
+        
+        // Update database
+        await User.deleteProfilePicture(userId);
+        
+        res.json({
+            success: true,
+            message: 'Profile picture removed successfully'
+        });
+    } catch (error) {
+        console.error('Delete profile picture error:', error);
+        res.status(500).json({ error: 'Failed to delete profile picture' });
+    }
+};
+
+// Get user profile with avatar
+export const getProfile = async (req, res) => {
+    try {
+        const user = await User.findByIdWithAvatar(req.user.id);
+        
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        res.json(user);
+    } catch (error) {
+        console.error('Get profile error:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
 };

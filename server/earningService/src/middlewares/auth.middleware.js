@@ -1,6 +1,9 @@
 import axios from 'axios';
+import dotenv from 'dotenv';
 
-const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:3001';
+
+dotenv.config();
+const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL  ;
 
 // Verify token with Auth Service
 export const verifyToken = async (req, res, next) => {
@@ -70,3 +73,19 @@ export const optionalAuth = async (req, res, next) => {
         next();
     }
 };
+const testAuthConnection = async () => {
+    try {
+        console.log(`📡 Testing connection to Auth Service: ${AUTH_SERVICE_URL}`);
+        const response = await axios.get(`${AUTH_SERVICE_URL}/health`, {
+            timeout: 5000
+        });
+        console.log(`✅ Auth Service health check:`, response.data);
+        return true;
+    } catch (error) {
+        console.error(`❌ Cannot reach Auth Service: ${error.message}`);
+        return false;
+    }
+};
+
+// Call it when the middleware loads
+testAuthConnection();
