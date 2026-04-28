@@ -3,9 +3,15 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const ACCESS_SECRET = process.env.ACCESS_SECRET || 'access-secret-key';
+const ACCESS_SECRET = process.env.ACCESS_SECRET;
 
-// For API Gateway to verify tokens (returns JSON response)
+// Validate required environment variables
+if (!ACCESS_SECRET) {
+    console.error('❌ FATAL: ACCESS_SECRET must be set in .env file');
+    process.exit(1);
+}
+
+// For API Gateway to verify tokens
 export const verifyToken = async (req, res) => {
     const accessToken = req.cookies.accessToken;
     
@@ -21,25 +27,22 @@ export const verifyToken = async (req, res) => {
     }
 };
 
-// For protecting routes (calls next())
+// For protecting routes
 export const authenticateToken = async (req, res, next) => {
     const accessToken = req.cookies.accessToken;
     
-    console.log('🔐 authenticateToken middleware');
-    console.log('   Has token:', !!accessToken);
-    
     if (!accessToken) {
-        console.log('❌ No token found');
         return res.status(401).json({ error: 'Authentication required' });
     }
     
     try {
         const decoded = jwt.verify(accessToken, ACCESS_SECRET);
         req.user = decoded;
-        console.log('✅ User authenticated:', decoded.email);
         next();
     } catch (error) {
-        console.error('❌ Token invalid:', error.message);
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ error: 'Access token expired', expired: true });
+        }
         res.status(401).json({ error: 'Invalid token' });
     }
 };

@@ -3,30 +3,69 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import cloudinary from '../utils/cloudinary.js';
 import fs from 'fs';
-import { log } from 'console';
 
 dotenv.config();
 
-const ACCESS_SECRET = process.env.ACCESS_SECRET || 'access-secret-key';
-const REFRESH_SECRET = process.env.REFRESH_SECRET || 'refresh-secret-key';
+// ⚠️ CRITICAL: No fallbacks! Must be set in .env
+const ACCESS_SECRET = process.env.ACCESS_SECRET;
+const REFRESH_SECRET = process.env.REFRESH_SECRET;
+const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY;
+const REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY;
+
+// Validate required environment variables
+if (!ACCESS_SECRET || !REFRESH_SECRET) {
+    console.error('❌ FATAL: ACCESS_SECRET and REFRESH_SECRET must be set in .env file');
+    process.exit(1);
+}
+
+if (!ACCESS_TOKEN_EXPIRY || !REFRESH_TOKEN_EXPIRY) {
+    console.error('❌ FATAL: Token expiry values must be set in .env file');
+    process.exit(1);
+}
+
+console.log('✅ JWT Configuration loaded successfully');
+console.log(`   Access Token Expiry: ${ACCESS_TOKEN_EXPIRY}`);
+console.log(`   Refresh Token Expiry: ${REFRESH_TOKEN_EXPIRY}`);
 
 // Generate both tokens
 const generateTokens = (user) => {
-    // Access token - short lived (15 minutes)
     const accessToken = jwt.sign(
         { id: user.id, email: user.email, name: user.name, role: user.role },
-        ACCESS_SECRET,
-        { expiresIn: '15m' }
+        ACCESS_SECRET,  // No fallback!
+        { expiresIn: ACCESS_TOKEN_EXPIRY }
     );
     
-    // Refresh token - long lived (7 days)
     const refreshToken = jwt.sign(
         { id: user.id, email: user.email },
-        REFRESH_SECRET,
-        { expiresIn: '7d' }
+        REFRESH_SECRET,  // No fallback!
+        { expiresIn: REFRESH_TOKEN_EXPIRY }
     );
     
     return { accessToken, refreshToken };
+};
+
+// Helper function to set cookies
+const setTokenCookies = (res, accessToken, refreshToken) => {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    
+    // Access token cookie - 15 minutes
+    res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: isProduction,  // true in production
+        sameSite: isProduction ? 'none' : 'lax',  // 'none' for cross-site in production
+        domain: isProduction ? '.yourdomain.com' : undefined,
+        maxAge: 15 * 60 * 1000
+    });
+    
+    // Refresh token cookie - 7 days
+    res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
+        domain: isProduction ? '.yourdomain.com' : undefined,
+        maxAge: 7 * 24 * 60 * 60 * 1000
+    });
 };
 
 export const signUp = async (req, res) => {
@@ -36,20 +75,6 @@ export const signUp = async (req, res) => {
         return res.status(400).json({ error: 'Email, password, and full name are required' });
     }
     
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        return res.status(400).json({ error: 'Invalid email format' });
-    }
-    
-    if (password.length < 6) {
-        return res.status(400).json({ error: 'Password must be at least 6 characters' });
-    }
-    
-    const validRoles = ['worker', 'verifier', 'advocate'];
-    if (role && !validRoles.includes(role)) {
-        return res.status(400).json({ error: 'Invalid role. Must be worker, verifier, or advocate' });
-    }
-    
     try {
         const existing = await User.findByEmail(email);
         if (existing) {
@@ -57,28 +82,10 @@ export const signUp = async (req, res) => {
         }
         
         const newUser = await User.signUp({ email, password, fullName, role });
-        
-        // Generate both tokens
         const { accessToken, refreshToken } = generateTokens(newUser);
         
-        // Store refresh token in database
         await User.storeRefreshToken(newUser.id, refreshToken);
-        
-        // Set access token as HTTP-only cookie
-        res.cookie('accessToken', accessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 15 * 60 * 1000  // 15 minutes
-        });
-        
-        // Set refresh token as HTTP-only cookie
-        res.cookie('refreshToken', refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days
-        });
+        setTokenCookies(res, accessToken, refreshToken);
         
         res.status(201).json({
             success: true,
@@ -106,27 +113,9 @@ export const login = async (req, res) => {
             return res.status(401).json({ error: 'Invalid email or password' });
         }
         
-        // Generate both tokens
         const { accessToken, refreshToken } = generateTokens(user);
-        
-        // Store refresh token in database
         await User.storeRefreshToken(user.id, refreshToken);
-        
-        // Set access token cookie
-        res.cookie('accessToken', accessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 15 * 60 * 1000  // 15 minutes
-        });
-        
-        // Set refresh token cookie
-        res.cookie('refreshToken', refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days
-        });
+        setTokenCookies(res, accessToken, refreshToken);
         
         res.status(200).json({
             success: true,
@@ -140,7 +129,35 @@ export const login = async (req, res) => {
     }
 };
 
-// Refresh access token using refresh token
+// Get current user using req.user from middleware
+export const getMe = async (req, res) => {
+    if (!req.user) {
+        return res.status(401).json({ error: 'Not authenticated' });
+    }
+    
+    try {
+        const user = await User.findById(req.user.id);
+        
+        if (!user) {
+            return res.status(401).json({ error: 'User not found' });
+        }
+        
+        res.status(200).json({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            city: user.city,
+            created_at: user.created_at
+        });
+        
+    } catch (error) {
+        console.error('GetMe error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+// Refresh access token
 export const refreshAccessToken = async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
     
@@ -149,35 +166,30 @@ export const refreshAccessToken = async (req, res) => {
     }
     
     try {
-        // Verify refresh token
         const decoded = jwt.verify(refreshToken, REFRESH_SECRET);
-        
-        // Check if refresh token exists in database (not revoked)
         const isValid = await User.verifyRefreshToken(decoded.id, refreshToken);
         
         if (!isValid) {
             return res.status(401).json({ error: 'Invalid or revoked refresh token' });
         }
         
-        // Get user
         const user = await User.findById(decoded.id);
         
         if (!user) {
             return res.status(401).json({ error: 'User not found' });
         }
         
-        // Generate new access token
+        // Generate NEW access token only
         const newAccessToken = jwt.sign(
             { id: user.id, email: user.email, name: user.name, role: user.role },
             ACCESS_SECRET,
-            { expiresIn: '15m' }
+            { expiresIn: ACCESS_TOKEN_EXPIRY }
         );
         
-        // Set new access token cookie
         res.cookie('accessToken', newAccessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             maxAge: 15 * 60 * 1000
         });
         
@@ -192,65 +204,21 @@ export const refreshAccessToken = async (req, res) => {
     }
 };
 
-// Logout - clear both tokens
+// Logout
 export const logout = async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
     
     if (refreshToken) {
-        // Revoke refresh token in database
         await User.revokeRefreshToken(refreshToken);
     }
     
-    res.clearCookie('accessToken', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict'
-    });
-    
-    res.clearCookie('refreshToken', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict'
-    });
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
     
     res.status(200).json({
         success: true,
         message: 'Logged out successfully'
     });
-};
-
-export const getMe = async (req, res) => {
-    const accessToken = req.cookies.accessToken;
-    
-    if (!accessToken) {
-        return res.status(401).json({ error: 'Not authenticated' });
-    }
-    
-    try {
-        const decoded = jwt.verify(accessToken, ACCESS_SECRET);
-        const user = await User.findById(decoded.id);
-        
-        if (!user) {
-            return res.status(401).json({ error: 'User not found' });
-        }
-        
-        // Return user info (exclude sensitive data)
-        res.status(200).json({
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            city: user.city,
-            created_at: user.created_at
-        });
-        
-    } catch (error) {
-        if (error.name === 'TokenExpiredError') {
-            return res.status(401).json({ error: 'Access token expired', expired: true });
-        }
-        console.error('GetMe error:', error);
-        res.status(401).json({ error: 'Invalid token' });
-    }
 };
 
 // Helper to extract public_id from Cloudinary URL

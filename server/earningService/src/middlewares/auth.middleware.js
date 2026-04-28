@@ -1,42 +1,66 @@
-import axios from 'axios';
+import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
-
 dotenv.config();
-const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL  ;
 
-// Verify token with Auth Service
-export const verifyToken = async (req, res, next) => {
+const ACCESS_SECRET = process.env.ACCESS_SECRET;
+
+// Validate required environment variable
+if (!ACCESS_SECRET) {
+    console.error('❌ FATAL: ACCESS_SECRET must be set in earnings-service .env');
+    console.error('   Copy the same ACCESS_SECRET from auth-service to earnings-service');
+    process.exit(1);
+}
+
+console.log('✅ Earnings Service: JWT middleware configured');
+
+// Middleware to authenticate requests independently
+export const authenticate = async (req, res, next) => {
+    console.log('🔐 Earnings Service: Authenticating request');
+    
+    // Try to get token from cookie or Authorization header
+    let token = null;
+    
+    // Check cookie first
+    if (req.cookies && req.cookies.accessToken) {
+        token = req.cookies.accessToken;
+        console.log('   Token from cookie');
+    }
+    
+    // Check Authorization header as fallback
+    if (!token && req.headers.authorization) {
+        const authHeader = req.headers.authorization;
+        if (authHeader.startsWith('Bearer ')) {
+            token = authHeader.substring(7);
+            console.log('   Token from Authorization header');
+        }
+    }
+    
+    if (!token) {
+        console.log('❌ No token found');
+        return res.status(401).json({ error: 'Authentication required' });
+    }
+    
     try {
-        // Get cookies from request
-        const cookies = req.headers.cookie || '';
+        // Verify JWT locally (NO network call to Auth Service!)
+        const decoded = jwt.verify(token, ACCESS_SECRET);
         
-        // Call Auth Service to verify token
-        const response = await axios.get(`${AUTH_SERVICE_URL}/api/auth/verify`, {
-            headers: {
-                Cookie: cookies
-            },
-            withCredentials: true
-        });
-
-        if (response.data.valid) {
-            req.user = response.data.user;
-            next();
-        } else {
-            res.status(401).json({ error: 'Invalid or expired token' });
-        }
+        req.user = decoded;
+        console.log(`✅ User authenticated: ${decoded.email} (${decoded.role})`);
+        
+        next();
     } catch (error) {
-        console.error('Auth middleware error:', error.message);
+        console.error('❌ Token verification failed:', error.message);
         
-        if (error.response?.status === 401) {
-            res.status(401).json({ error: 'Authentication required' });
-        } else {
-            res.status(500).json({ error: 'Auth service unavailable' });
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ error: 'Token expired', expired: true });
         }
+        
+        res.status(401).json({ error: 'Invalid token' });
     }
 };
 
-// Check if user has required role
+// Optional: Role-based authorization
 export const requireRole = (roles) => {
     return (req, res, next) => {
         if (!req.user) {
@@ -53,39 +77,3 @@ export const requireRole = (roles) => {
         next();
     };
 };
-
-// Optional: Get user from token without failing
-export const optionalAuth = async (req, res, next) => {
-    try {
-        const cookies = req.headers.cookie || '';
-        
-        const response = await axios.get(`${AUTH_SERVICE_URL}/api/auth/verify`, {
-            headers: { Cookie: cookies },
-            withCredentials: true
-        });
-
-        if (response.data.valid) {
-            req.user = response.data.user;
-        }
-        next();
-    } catch (error) {
-        // Continue without user
-        next();
-    }
-};
-const testAuthConnection = async () => {
-    try {
-        console.log(`📡 Testing connection to Auth Service: ${AUTH_SERVICE_URL}`);
-        const response = await axios.get(`${AUTH_SERVICE_URL}/health`, {
-            timeout: 5000
-        });
-        console.log(`✅ Auth Service health check:`, response.data);
-        return true;
-    } catch (error) {
-        console.error(`❌ Cannot reach Auth Service: ${error.message}`);
-        return false;
-    }
-};
-
-// Call it when the middleware loads
-testAuthConnection();
