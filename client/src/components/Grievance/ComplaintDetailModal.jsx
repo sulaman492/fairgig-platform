@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ThumbsUp, X, Flag, Share2, Bookmark, AlertTriangle, ExternalLink, Copy, Check } from 'lucide-react';
-import StatusBadge from '../common/StatusBadge';
+import StatusBadge from '../common/statusBadge';
 
 export default function ComplaintDetailModal({ complaint, onClose, onUpvote }) {
     const [copied, setCopied] = useState(false);

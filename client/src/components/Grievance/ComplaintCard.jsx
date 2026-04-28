@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ThumbsUp, MessageCircle, Flag, AlertTriangle, Clock, CheckCircle, AlertCircle, Share2, Bookmark } from 'lucide-react';
-import StatusBadge from '../common/StatusBadge';
+import StatusBadge from '../common/statusBadge';
 import ComplaintDetailModal from './ComplaintDetailModal';
 
 export default function ComplaintCard({ complaint, onUpvote, showUser = true, isAnonymous = false }) {
