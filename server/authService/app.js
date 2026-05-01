@@ -30,9 +30,7 @@ if (NODE_ENV === 'production' && !API_GATEWAY_URL) {
 
 // CORS configuration - ONLY allow API Gateway
 const corsOptions = {
-    origin: NODE_ENV === 'production' 
-        ? API_GATEWAY_URL  // ONLY API Gateway can call this service
-        : ['http://localhost:5000'],  // Local API Gateway only
+    origin: 'https://fairgig.sulamanshahzad492.workers.dev',
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
     exposedHeaders: ['Set-Cookie']

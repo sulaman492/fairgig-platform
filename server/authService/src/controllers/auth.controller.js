@@ -52,7 +52,7 @@ const setTokenCookies = (res, accessToken, refreshToken) => {
     // For localhost, don't set domain (undefined)
     let cookieDomain = undefined;
     if (isProduction) {
-        cookieDomain = '.onrender.com';
+        cookieDomain = 'fairgig.sulamanshahzad492.workers.dev';
     }
     
     console.log(`🍪 Setting cookies - Production: ${isProduction}, Domain: ${cookieDomain || 'none'}`);
@@ -168,6 +168,7 @@ export const getMe = async (req, res) => {
 };
 
 // Refresh access token - FIXED DOMAIN
+// Refresh access token - FIXED DOMAIN
 export const refreshAccessToken = async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
     
@@ -196,14 +197,13 @@ export const refreshAccessToken = async (req, res) => {
             { expiresIn: ACCESS_TOKEN_EXPIRY }
         );
         
-        // Use same cookie settings
-        const isProduction = process.env.NODE_ENV === 'production';
-        const cookieDomain = isProduction ? '.onrender.com' : undefined;
+        // ✅ Use Cloudflare worker domain
+        const cookieDomain = 'fairgig.sulamanshahzad492.workers.dev';
         
         res.cookie('accessToken', newAccessToken, {
             httpOnly: true,
-            secure: isProduction,
-            sameSite: isProduction ? 'none' : 'lax',
+            secure: true,
+            sameSite: 'lax',
             domain: cookieDomain,
             maxAge: 15 * 60 * 1000,
             path: '/'
@@ -219,7 +219,7 @@ export const refreshAccessToken = async (req, res) => {
         res.status(401).json({ error: 'Invalid refresh token' });
     }
 };
-
+// Logout - FIXED DOMAIN
 // Logout - FIXED DOMAIN
 export const logout = async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
@@ -228,8 +228,8 @@ export const logout = async (req, res) => {
         await User.revokeRefreshToken(refreshToken);
     }
     
-    const isProduction = process.env.NODE_ENV === 'production';
-    const cookieDomain = isProduction ? '.onrender.com' : undefined;
+    // ✅ Use Cloudflare worker domain
+    const cookieDomain = 'fairgig.sulamanshahzad492.workers.dev';
     
     res.clearCookie('accessToken', { domain: cookieDomain, path: '/' });
     res.clearCookie('refreshToken', { domain: cookieDomain, path: '/' });
@@ -239,7 +239,6 @@ export const logout = async (req, res) => {
         message: 'Logged out successfully'
     });
 };
-
 // Helper to extract public_id from Cloudinary URL
 const extractPublicId = (url) => {
     if (!url) return null;
