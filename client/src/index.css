@@ -54,3 +54,43 @@ select {
 .hero-swiper .swiper-pagination-bullet-active {
   background: #111827;
 }
+
+/* Extra small screens (phones under 480px) */
+@media (max-width: 480px) {
+  .xs\:inline {
+    display: inline;
+  }
+  .xs\:hidden {
+    display: none;
+  }
+  .xs\:flex-row {
+    flex-direction: row;
+  }
+  .xs\:items-center {
+    align-items: center;
+  }
+  .xs\:gap-0 {
+    gap: 0;
+  }
+}
+
+/* Small screens (480px - 640px) */
+@media (min-width: 480px) {
+  .xs\:inline {
+    display: inline;
+  }
+}
+
+/* Default hidden utility */
+.xs\:inline {
+  display: none;
+}
+/* Extra small screens */
+@media (min-width: 480px) {
+  .xs\:inline {
+    display: inline;
+  }
+}
+.xs\:inline {
+  display: none;
+}
