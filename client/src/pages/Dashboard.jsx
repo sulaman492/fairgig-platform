@@ -1,14 +1,7 @@
 // src/pages/Dashboard.jsx
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-    BarChart3,
-    FileBadge2,
-    LayoutDashboard,
-    LogOut,
-    ReceiptText,
-    ShieldAlert,
-} from 'lucide-react';
+import { BarChart3, FileBadge2, LayoutDashboard, LogOut, ReceiptText, ShieldAlert } from 'lucide-react';
 import EarningsLogger from '../components/Dashboard/EarningsLogger';
 import Analytics from '../components/Dashboard/Analytics';
 import DashboardOverview from '../components/Dashboard/DashboardOverview';
@@ -31,21 +24,21 @@ const Dashboard = () => {
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [user, setUser] = useState(null);
 
-    async function fetchUserProfile() {
+    useEffect(() => {
+        fetchUserProfile();
+    }, []);
+
+    const fetchUserProfile = async () => {
         try {
             const response = await authApi.get('/api/auth/profile');
             setUser(response.data);
         } catch (error) {
             console.error('Failed to fetch user profile:', error);
         }
-    }
-
-    useEffect(() => {
-        Promise.resolve().then(fetchUserProfile);
-    }, []);
+    };
 
     const handleAvatarUpdate = (newAvatarUrl) => {
-        setUser((prev) => ({ ...prev, profile_picture: newAvatarUrl }));
+        setUser(prev => ({ ...prev, profile_picture: newAvatarUrl }));
     };
 
     const handleLogout = async () => {
@@ -60,24 +53,24 @@ const Dashboard = () => {
     };
 
     return (
-        <div className="h-screen overflow-hidden bg-slate-950 text-slate-950">
+        <div className="h-screen overflow-hidden bg-[linear-gradient(180deg,_#f8fafc_0%,_#eef2f7_48%,_#e5e7eb_100%)] text-slate-950">
             <main className="h-full">
-                <section className="h-full overflow-hidden bg-slate-950">
+                <section className="h-full overflow-hidden border border-slate-200/80 bg-white/65 backdrop-blur-[2px]">
                     <div className="grid h-full lg:grid-cols-[290px_minmax(0,1fr)]">
-                        <aside className="flex h-full flex-col overflow-y-auto border-b border-slate-800 bg-slate-950 px-4 py-5 text-white lg:border-b-0 lg:border-r">
-                            <div className="mb-8 flex justify-center pt-1">
-                                <Avatar
-                                    user={user}
+                        {/* Sidebar */}
+                        <aside className="flex h-full flex-col border-b border-slate-200 bg-white/75 p-4 lg:border-b-0 lg:border-r overflow-y-auto">
+                            <div className="mb-6 flex justify-center pt-2">
+                                <Avatar 
+                                    user={user} 
                                     onUpdate={handleAvatarUpdate}
                                     size="lg"
                                 />
                             </div>
 
-                            <div className="space-y-2">
+                            <div className="space-y-3">
                                 {dashboardItems.map((item) => {
                                     const Icon = item.icon;
                                     const isActive = activeItem === item.id;
-
                                     return (
                                         <button
                                             key={item.id}
@@ -85,8 +78,8 @@ const Dashboard = () => {
                                             onClick={() => setActiveItem(item.id)}
                                             className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition ${
                                                 isActive
-                                                    ? 'bg-white text-slate-950 shadow-[0_10px_30px_rgba(255,255,255,0.08)]'
-                                                    : 'bg-transparent text-slate-300 hover:bg-slate-900 hover:text-white'
+                                                    ? 'bg-slate-950 text-white'
+                                                    : 'bg-transparent text-slate-800 hover:bg-slate-100'
                                             }`}
                                         >
                                             <Icon className="h-5 w-5 shrink-0" />
@@ -96,12 +89,12 @@ const Dashboard = () => {
                                 })}
                             </div>
 
-                            <div className="mt-auto border-t border-slate-800 pt-4">
+                            <div className="mt-auto pt-4">
                                 <button
                                     type="button"
                                     onClick={handleLogout}
                                     disabled={isLoggingOut}
-                                    className="flex w-full items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-left text-sm font-medium text-slate-200 transition hover:border-slate-700 hover:bg-slate-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-70"
+                                    className="flex w-full items-center gap-3 rounded-xl bg-slate-100 px-4 py-3 text-left text-sm font-medium text-slate-800 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-70"
                                 >
                                     <LogOut className="h-5 w-5 shrink-0" />
                                     <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
@@ -109,14 +102,13 @@ const Dashboard = () => {
                             </div>
                         </aside>
 
-                        <section className="relative overflow-hidden bg-slate-900">
-                            <div className="h-full overflow-y-auto bg-[radial-gradient(circle_at_top,_rgba(148,163,184,0.08),_transparent_28%),linear-gradient(180deg,_#0f172a_0%,_#111827_100%)] p-6 text-slate-100 sm:p-8">
-                                {activeItem === 'dashboard' && <DashboardOverview />}
-                                {activeItem === 'earnings' && <EarningsLogger />}
-                                {activeItem === 'analytics' && <Analytics />}
-                                {activeItem === 'certificate' && <CertificateGenerator />}
-                                {activeItem === 'grievance' && <GrievanceBoard />}
-                            </div>
+                        {/* Content area */}
+                        <section className="relative overflow-y-auto bg-slate-50/70 p-6 sm:p-8">
+                            {activeItem === 'dashboard' && <DashboardOverview />}
+                            {activeItem === 'earnings' && <EarningsLogger />}
+                            {activeItem === 'analytics' && <Analytics />}
+                            {activeItem === 'certificate' && <CertificateGenerator />}
+                            {activeItem === 'grievance' && <GrievanceBoard />}
                         </section>
                     </div>
                 </section>
