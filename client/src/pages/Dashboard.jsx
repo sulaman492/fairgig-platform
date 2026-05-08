@@ -1,16 +1,29 @@
 // src/pages/Dashboard.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BarChart3, FileBadge2, LayoutDashboard, LogOut, ReceiptText, ShieldAlert } from 'lucide-react';
+import {
+    BarChart3,
+    FileBadge2,
+    LayoutDashboard,
+    LogOut,
+    Map,
+    ReceiptText,
+    ShieldAlert,
+    Users,
+} from 'lucide-react';
 import EarningsLogger from '../components/Dashboard/EarningsLogger';
 import Analytics from '../components/Dashboard/Analytics';
 import DashboardOverview from '../components/Dashboard/DashboardOverview';
 import CertificateGenerator from '../components/Dashboard/CertificateGenerator';
 import GrievanceBoard from '../components/Grievance/GrievanceBoard';
+import AdvocateOverview from '../components/Advocate/AdvocateOverview';
+import AdvocateWorkers from '../components/Advocate/AdvocateWorkers';
+import AdvocateAnalytics from '../components/Advocate/AdvocateAnalytics';
+import AdvocateGrievanceBoard from '../components/Advocate/AdvocateGrievanceBoard';
 import Avatar from '../components/common/Avatar';
 import { authApi } from '../lib/authApi';
 
-const dashboardItems = [
+const workerDashboardItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'earnings', label: 'Earnings', icon: ReceiptText },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
@@ -18,11 +31,20 @@ const dashboardItems = [
     { id: 'grievance', label: 'Grievance', icon: ShieldAlert },
 ];
 
+const advocateDashboardItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'workers', label: 'Workers', icon: Users },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'distribution', label: 'Distribution', icon: Map },
+    { id: 'grievance', label: 'Moderation', icon: ShieldAlert },
+];
+
 const Dashboard = () => {
     const navigate = useNavigate();
     const [activeItem, setActiveItem] = useState('dashboard');
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [user, setUser] = useState(null);
+    const [loadingProfile, setLoadingProfile] = useState(true);
 
     useEffect(() => {
         fetchUserProfile();
@@ -30,10 +52,13 @@ const Dashboard = () => {
 
     const fetchUserProfile = async () => {
         try {
+            setLoadingProfile(true);
             const response = await authApi.get('/api/auth/profile');
             setUser(response.data);
         } catch (error) {
             console.error('Failed to fetch user profile:', error);
+        } finally {
+            setLoadingProfile(false);
         }
     };
 
@@ -51,6 +76,34 @@ const Dashboard = () => {
             navigate('/');
         }
     };
+
+    const isAdvocate = user?.role === 'advocate';
+    const dashboardItems = isAdvocate ? advocateDashboardItems : workerDashboardItems;
+
+    const renderContent = () => {
+        if (isAdvocate) {
+            if (activeItem === 'dashboard') return <AdvocateOverview />;
+            if (activeItem === 'workers') return <AdvocateWorkers />;
+            if (activeItem === 'analytics' || activeItem === 'distribution') return <AdvocateAnalytics />;
+            if (activeItem === 'grievance') return <AdvocateGrievanceBoard />;
+            return <AdvocateOverview />;
+        }
+
+        if (activeItem === 'dashboard') return <DashboardOverview />;
+        if (activeItem === 'earnings') return <EarningsLogger />;
+        if (activeItem === 'analytics') return <Analytics />;
+        if (activeItem === 'certificate') return <CertificateGenerator />;
+        if (activeItem === 'grievance') return <GrievanceBoard />;
+        return <DashboardOverview />;
+    };
+
+    if (loadingProfile) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,_#f8fafc_0%,_#eef2f7_48%,_#e5e7eb_100%)] text-slate-500">
+                Loading your dashboard...
+            </div>
+        );
+    }
 
     return (
         <div className="h-screen overflow-hidden bg-[linear-gradient(180deg,_#f8fafc_0%,_#eef2f7_48%,_#e5e7eb_100%)] text-slate-950">
@@ -104,11 +157,7 @@ const Dashboard = () => {
 
                         {/* Content area */}
                         <section className="relative overflow-y-auto bg-slate-50/70 p-6 sm:p-8">
-                            {activeItem === 'dashboard' && <DashboardOverview />}
-                            {activeItem === 'earnings' && <EarningsLogger />}
-                            {activeItem === 'analytics' && <Analytics />}
-                            {activeItem === 'certificate' && <CertificateGenerator />}
-                            {activeItem === 'grievance' && <GrievanceBoard />}
+                            {renderContent()}
                         </section>
                     </div>
                 </section>

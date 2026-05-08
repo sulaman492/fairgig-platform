@@ -34,6 +34,25 @@ const GRIEVANCE_SERVICE_URL = process.env.GRIEVANCE_SERVICE_URL || 'http://local
 const ANALYTICS_SERVICE_URL = process.env.ANALYTICS_SERVICE_URL || 'http://localhost:3005';
 const CERTIFICATE_SERVICE_URL = process.env.CERTIFICATE_SERVICE_URL || 'http://localhost:3006';
 
+const getAccessToken = (req) => {
+    const cookieHeader = req.headers.cookie || '';
+    const cookie = cookieHeader
+        .split(';')
+        .map(part => part.trim())
+        .find(part => part.startsWith('accessToken='));
+
+    if (cookie) {
+        return decodeURIComponent(cookie.substring('accessToken='.length));
+    }
+
+    const authHeader = req.headers.authorization || '';
+    if (authHeader.startsWith('Bearer ')) {
+        return authHeader.substring(7);
+    }
+
+    return null;
+};
+
 // ============================================
 // PUBLIC ROUTES (No Authentication)
 // ============================================
@@ -252,7 +271,10 @@ app.get('/api/shifts/anomalies', authenticateGateway, requireRole(['worker']), a
             method: 'POST',
             url: `${ANOMALY_SERVICE_URL}/api/detect-anomalies`,
             data: { user_id: req.user.id, earnings: earningsData },
-            headers: { 'Content-Type': 'application/json' }
+            headers: {
+                'Content-Type': 'application/json',
+                ...(getAccessToken(req) ? { 'Authorization': `Bearer ${getAccessToken(req)}` } : {})
+            }
         });
         
         res.json(anomalyResponse.data);
@@ -343,16 +365,8 @@ app.use('/api/anomaly', authenticateGateway, requireRole(['worker', 'advocate'])
     try {
         const path = req.originalUrl.replace('/api/anomaly', '/api');
         const url = `${ANOMALY_SERVICE_URL}${path}`;
-        
-        let token = req.cookies?.accessToken;
-        
-        if (!token && req.headers.authorization) {
-            const authHeader = req.headers.authorization;
-            if (authHeader.startsWith('Bearer ')) {
-                token = authHeader.substring(7);
-            }
-        }
-        
+
+        const token = getAccessToken(req);
         const authHeaderValue = token ? `Bearer ${token}` : '';
         
         const response = await axios({
