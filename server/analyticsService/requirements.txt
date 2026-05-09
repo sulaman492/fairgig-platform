@@ -1,0 +1,10 @@
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+asyncpg==0.29.0
+httpx==0.25.1
+python-dotenv==1.0.0
+pydantic==2.5.0
+pydantic-core==2.14.1
+typing-extensions==4.8.0
+PyJWT==2.8.0
+python-multipart==0.0.6
