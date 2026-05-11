@@ -27,7 +27,7 @@ const formatCurrency = (value) =>
     maximumFractionDigits: 0,
   }).format(value || 0);
 
-export default function AdvocateAnalytics() {
+export default function AdvocateAnalytics({ section = 'all' }) {
   const [loading, setLoading] = useState(true);
   const [commission, setCommission] = useState({ trends: [], rising_platforms: [] });
   const [distribution, setDistribution] = useState([]);
@@ -73,6 +73,10 @@ export default function AdvocateAnalytics() {
     return <div className="flex h-64 items-center justify-center text-gray-500">Loading market analytics...</div>;
   }
 
+  const showCommission = section === 'all' || section === 'analytics';
+  const showDistribution = section === 'all' || section === 'distribution';
+  const showComplaints = section === 'all' || section === 'analytics';
+
   return (
     <div className="space-y-6">
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -82,65 +86,67 @@ export default function AdvocateAnalytics() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-4 flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-amber-600" />
-            <h3 className="text-lg font-semibold text-slate-900">Weekly Commission Trends</h3>
-          </div>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={commissionChartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="week" stroke="#64748b" />
-                <YAxis stroke="#64748b" />
-                <Tooltip />
-                <Legend />
-                {(commission.trends || []).map((platform, index) => (
-                  <Line
-                    key={platform.platform}
-                    type="monotone"
-                    dataKey={platform.platform}
-                    stroke={COLORS[index % COLORS.length]}
-                    strokeWidth={3}
-                    dot={false}
-                  />
-                ))}
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
+      {showCommission && (
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-4 flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-amber-600" />
+              <h3 className="text-lg font-semibold text-slate-900">Weekly Commission Trends</h3>
+            </div>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={commissionChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="week" stroke="#64748b" />
+                  <YAxis stroke="#64748b" />
+                  <Tooltip />
+                  <Legend />
+                  {(commission.trends || []).map((platform, index) => (
+                    <Line
+                      key={platform.platform}
+                      type="monotone"
+                      dataKey={platform.platform}
+                      stroke={COLORS[index % COLORS.length]}
+                      strokeWidth={3}
+                      dot={false}
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-4 flex items-center gap-2">
-            <ChartColumnBig className="h-5 w-5 text-blue-600" />
-            <h3 className="text-lg font-semibold text-slate-900">Platforms Increasing Deductions</h3>
-          </div>
-          <div className="space-y-3">
-            {(commission.rising_platforms || []).map((item) => (
-              <div key={item.platform} className="rounded-2xl border border-amber-100 bg-amber-50 p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="font-semibold text-slate-900">{item.platform}</p>
-                  <span className="rounded-full bg-amber-200 px-2.5 py-1 text-xs font-semibold text-amber-900">
-                    +{item.change}%
-                  </span>
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-4 flex items-center gap-2">
+              <ChartColumnBig className="h-5 w-5 text-blue-600" />
+              <h3 className="text-lg font-semibold text-slate-900">Platforms Increasing Deductions</h3>
+            </div>
+            <div className="space-y-3">
+              {(commission.rising_platforms || []).map((item) => (
+                <div key={item.platform} className="rounded-2xl border border-amber-100 bg-amber-50 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-semibold text-slate-900">{item.platform}</p>
+                    <span className="rounded-full bg-amber-200 px-2.5 py-1 text-xs font-semibold text-amber-900">
+                      +{item.change}%
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm text-slate-600">
+                    Recent average: {item.recent_avg}% commission
+                  </p>
+                  <p className="text-xs text-slate-500">Previous baseline: {item.previous_avg}%</p>
                 </div>
-                <p className="mt-2 text-sm text-slate-600">
-                  Recent average: {item.recent_avg}% commission
-                </p>
-                <p className="text-xs text-slate-500">Previous baseline: {item.previous_avg}%</p>
-              </div>
-            ))}
-            {(!commission.rising_platforms || commission.rising_platforms.length === 0) && (
-              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-600">
-                No platform is currently showing a meaningful upward commission trend.
-              </div>
-            )}
-          </div>
-        </section>
-      </div>
+              ))}
+              {(!commission.rising_platforms || commission.rising_platforms.length === 0) && (
+                <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-600">
+                  No platform is currently showing a meaningful upward commission trend.
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
+      )}
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+      {showDistribution && (
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-4 flex items-center gap-2">
             <Building2 className="h-5 w-5 text-emerald-600" />
@@ -182,7 +188,9 @@ export default function AdvocateAnalytics() {
             </table>
           </div>
         </section>
+      )}
 
+      {showComplaints && (
         <section className="space-y-6">
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-4 flex items-center gap-2">
@@ -244,7 +252,7 @@ export default function AdvocateAnalytics() {
             </div>
           </div>
         </section>
-      </div>
+      )}
     </div>
   );
 }

@@ -6,7 +6,7 @@ const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:3001'
 // Main authentication middleware for API Gateway
 export const authenticateGateway = async (req, res, next) => {
     // Skip authentication for public routes
-    const publicRoutes = ['/api/auth/login', '/api/auth/signup', '/health'];
+    const publicRoutes = ['/api/auth/login', '/api/auth/signup', '/api/auth/refresh', '/health'];
     
     if (publicRoutes.some(route => req.originalUrl.startsWith(route))) {
         return next();

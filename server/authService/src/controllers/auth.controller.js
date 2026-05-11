@@ -45,39 +45,53 @@ const generateTokens = (user) => {
 };
 
 // Helper function to set cookies - FIXED DOMAIN
+// Helper function to set cookies - FIXED FOR LOCALHOST
 const setTokenCookies = (res, accessToken, refreshToken) => {
     const isProduction = process.env.NODE_ENV === 'production';
+    const isDevelopment = process.env.NODE_ENV === 'development';
     
-    // For Render.com, use .onrender.com domain
-    // For localhost, don't set domain (undefined)
-    let cookieDomain = undefined;
+    // Determine cookie domain based on environment
+    let cookieDomain = undefined; // undefined = current domain (localhost)
+    
     if (isProduction) {
+        // Production: Use Cloudflare worker domain
         cookieDomain = 'fairgig.sulamanshahzad492.workers.dev';
+    } else {
+        // Development: Don't set domain (works on localhost)
+        cookieDomain = undefined;
     }
     
-    console.log(`🍪 Setting cookies - Production: ${isProduction}, Domain: ${cookieDomain || 'none'}`);
+    // Determine secure flag
+    const isSecure = isProduction; // true in production, false in development
+    
+    // Determine sameSite
+    const sameSite = isProduction ? 'none' : 'lax';
+    
+    console.log(`🍪 Setting cookies - Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`   Domain: ${cookieDomain || 'current domain (localhost)'}`);
+    console.log(`   Secure: ${isSecure}`);
+    console.log(`   SameSite: ${sameSite}`);
     
     // Access token cookie - 15 minutes
     res.cookie('accessToken', accessToken, {
         httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? 'none' : 'lax',
+        secure: isSecure,
+        sameSite: sameSite,
         domain: cookieDomain,
-        maxAge: 15 * 60 * 1000,
+        maxAge: 15 * 60 * 1000, // 15 minutes
         path: '/'
     });
     
     // Refresh token cookie - 7 days
     res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? 'none' : 'lax',
+        secure: isSecure,
+        sameSite: sameSite,
         domain: cookieDomain,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         path: '/'
     });
 };
-
 export const signUp = async (req, res) => {
     const { email, password, fullName, role } = req.body;
     
@@ -169,6 +183,7 @@ export const getMe = async (req, res) => {
 
 // Refresh access token - FIXED DOMAIN
 // Refresh access token - FIXED DOMAIN
+// Refresh access token - FIXED FOR LOCALHOST
 export const refreshAccessToken = async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
     
@@ -197,13 +212,16 @@ export const refreshAccessToken = async (req, res) => {
             { expiresIn: ACCESS_TOKEN_EXPIRY }
         );
         
-        // ✅ Use Cloudflare worker domain
-        const cookieDomain = 'fairgig.sulamanshahzad492.workers.dev';
+        // Determine cookie settings based on environment
+        const isProduction = process.env.NODE_ENV === 'production';
+        const cookieDomain = isProduction ? 'fairgig.sulamanshahzad492.workers.dev' : undefined;
+        const isSecure = isProduction;
+        const sameSite = isProduction ? 'none' : 'lax';
         
         res.cookie('accessToken', newAccessToken, {
             httpOnly: true,
-            secure: true,
-            sameSite: 'lax',
+            secure: isSecure,
+            sameSite: sameSite,
             domain: cookieDomain,
             maxAge: 15 * 60 * 1000,
             path: '/'
@@ -219,8 +237,8 @@ export const refreshAccessToken = async (req, res) => {
         res.status(401).json({ error: 'Invalid refresh token' });
     }
 };
-// Logout - FIXED DOMAIN
-// Logout - FIXED DOMAIN
+
+// Logout - FIXED FOR LOCALHOST
 export const logout = async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
     
@@ -228,8 +246,9 @@ export const logout = async (req, res) => {
         await User.revokeRefreshToken(refreshToken);
     }
     
-    // ✅ Use Cloudflare worker domain
-    const cookieDomain = 'fairgig.sulamanshahzad492.workers.dev';
+    // Determine cookie settings based on environment
+    const isProduction = process.env.NODE_ENV === 'production';
+    const cookieDomain = isProduction ? 'fairgig.sulamanshahzad492.workers.dev' : undefined;
     
     res.clearCookie('accessToken', { domain: cookieDomain, path: '/' });
     res.clearCookie('refreshToken', { domain: cookieDomain, path: '/' });

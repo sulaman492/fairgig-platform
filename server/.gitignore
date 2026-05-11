@@ -31,15 +31,118 @@ Thumbs.db
 # Build files
 dist/
 build/
-*.pyc
-__pycache__/
 
-# Secrets
+# ============================================
+# PYTHON / ANALYTICS SERVICE FILES
+# ============================================
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv
+venv.bak/
+env.bak/
+
+# Python egg files
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+share/python-wheels/
+
+# Python tools
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.ruff_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# ============================================
+# SECRETS & CERTIFICATES
+# ============================================
+
 *.pem
 *.key
 *.cert
+*.crt
+*.p12
 
-# Temporary files
+# ============================================
+# TEMPORARY FILES
+# ============================================
+
 tmp/
 temp/
 *.tmp
+*.bak
+*.swp
+*~
+
+# ============================================
+# IDE & OS SPECIFIC
+# ============================================
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+.history/
+
+# PyCharm
+.idea/
+*.iml
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+
+# ============================================
+# APPLICATION SPECIFIC
+# ============================================
+
+# Uploads
+uploads/
+static/uploads/
+media/
+
+# Reports
+*.html
+*.pdf
+reports/
+
+# Test coverage
+htmlcov/
+.tox/
+.coverage
+coverage.xml
+
+# Logs from analytics service
+*.log
+logs/

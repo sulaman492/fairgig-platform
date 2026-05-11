@@ -93,7 +93,8 @@ const Dashboard = () => {
         if (isAdvocate) {
             if (activeItem === 'dashboard') return <AdvocateOverview />;
             if (activeItem === 'workers') return <AdvocateWorkers />;
-            if (activeItem === 'analytics' || activeItem === 'distribution') return <AdvocateAnalytics />;
+            if (activeItem === 'analytics') return <AdvocateAnalytics section="analytics" />;
+            if (activeItem === 'distribution') return <AdvocateAnalytics section="distribution" />;
             if (activeItem === 'grievance') return <AdvocateGrievanceBoard />;
             return <AdvocateOverview />;
         }

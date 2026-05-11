@@ -3,19 +3,33 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "concurrently \"npm run dev:auth\" \"npm run dev:earnings\" \"npm run dev:anomaly\" \"npm run dev:grievance\" \"npm run dev:analytics\" \"npm run dev:certificate\" \"npm run dev:gateway\"",
+    "dev:auth": "cd authService && npm run dev",
+    "dev:earnings": "cd earningService && npm run dev",
+    "dev:anomaly": "cd anomalyService && python app.py",
+    "dev:grievance": "cd grievanceService && npm run dev",
+    "dev:analytics": "cd analyticsService && python app.py",
+    "dev:certificate": "cd certificateService && npm run dev",
+    "dev:gateway": "cd api-gateway && npm run dev",
+    "seed": "node seed-rich.js",
+    "seed:reset": "node seed-rich.js --reset"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "concurrently": "^8.2.2",
     "nodemon": "^3.1.14"
   },
   "dependencies": {
+    "@faker-js/faker": "^10.4.0",
     "axios": "^1.15.0",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "pg": "^8.20.0"
   }
 }

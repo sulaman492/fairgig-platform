@@ -14,7 +14,7 @@ app.use(express.json({ limit: '10mb' }));
 // ============================================
 // CORS CONFIGURATION - READ FROM ENV VARIABLE
 // ============================================
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const FRONTEND_URL = process.env.FRONTEND_URL ;
 
 console.log(`🔧 CORS allowed origin: ${FRONTEND_URL}`);
 console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
@@ -27,12 +27,12 @@ app.use(cors({
 }));
 
 // Service URLs
-const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:3001';
-const EARNINGS_SERVICE_URL = process.env.EARNINGS_SERVICE_URL || 'http://localhost:3002';
-const ANOMALY_SERVICE_URL = process.env.ANOMALY_SERVICE_URL || 'http://localhost:3003';
-const GRIEVANCE_SERVICE_URL = process.env.GRIEVANCE_SERVICE_URL || 'http://localhost:3004';
-const ANALYTICS_SERVICE_URL = process.env.ANALYTICS_SERVICE_URL || 'http://localhost:3005';
-const CERTIFICATE_SERVICE_URL = process.env.CERTIFICATE_SERVICE_URL || 'http://localhost:3006';
+const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL ;
+const EARNINGS_SERVICE_URL = process.env.EARNINGS_SERVICE_URL ;
+const ANOMALY_SERVICE_URL = process.env.ANOMALY_SERVICE_URL ;
+const GRIEVANCE_SERVICE_URL = process.env.GRIEVANCE_SERVICE_URL ;
+const ANALYTICS_SERVICE_URL = process.env.ANALYTICS_SERVICE_URL ;
+const CERTIFICATE_SERVICE_URL = process.env.CERTIFICATE_SERVICE_URL ;
 
 const getAccessToken = (req) => {
     const cookieHeader = req.headers.cookie || '';
@@ -129,6 +129,34 @@ app.post('/api/auth/signup', async (req, res) => {
         res.status(response.status).json(response.data);
     } catch (error) {
         res.status(error.response?.status || 500).json(error.response?.data || { error: 'Signup failed' });
+    }
+});
+
+// Refresh access token - Public
+app.post('/api/auth/refresh', async (req, res) => {
+    try {
+        const url = `${AUTH_SERVICE_URL}/api/auth/refresh`;
+        const response = await axios({
+            method: 'POST',
+            url,
+            headers: {
+                'Cookie': req.headers.cookie || '',
+                'Content-Type': 'application/json'
+            },
+            withCredentials: true
+        });
+
+        const setCookieHeaders = response.headers['set-cookie'];
+        if (setCookieHeaders) {
+            const cookies = Array.isArray(setCookieHeaders) ? setCookieHeaders : [setCookieHeaders];
+            cookies.forEach(cookie => {
+                res.append('Set-Cookie', cookie);
+            });
+        }
+
+        res.status(response.status).json(response.data);
+    } catch (error) {
+        res.status(error.response?.status || 500).json(error.response?.data || { error: 'Token refresh failed' });
     }
 });
 
@@ -387,6 +415,98 @@ app.use('/api/anomaly', authenticateGateway, requireRole(['worker', 'advocate'])
     }
 });
 
+// Analytics routes - Advocate only (FIXED)
+app.use('/api/analytics', authenticateGateway, requireRole(['advocate']), async (req, res) => {
+    try {
+        // Check if Analytics Service URL is configured
+        if (!ANALYTICS_SERVICE_URL) {
+            console.error('❌ ANALYTICS_SERVICE_URL is not configured');
+            return res.status(503).json({ 
+                error: 'Analytics service not configured',
+                details: 'ANALYTICS_SERVICE_URL environment variable is missing'
+            });
+        }
+        
+        const url = `${ANALYTICS_SERVICE_URL}${req.originalUrl}`;
+        
+        console.log(`📊 Proxying to Analytics: ${req.method} ${url}`);
+        
+        const response = await axios({
+            method: req.method,
+            url: url,
+            data: req.body,
+            headers: { 
+                'Cookie': req.headers.cookie || '',
+                'Content-Type': 'application/json'
+            },
+            timeout: 10000, // 10 second timeout
+            validateStatus: false // Don't throw on any status
+        });
+        
+        console.log(`✅ Analytics response: ${response.status}`);
+        res.status(response.status).json(response.data);
+        
+    } catch (error) {
+        console.error('❌ Analytics service error:', error.message);
+        
+        // Handle different error types
+        if (error.code === 'ECONNREFUSED') {
+            console.error('   Analytics service is not running on port 3005');
+            return res.status(503).json({ 
+                error: 'Analytics service is unavailable',
+                details: 'Service not running or port 3005 is not accessible'
+            });
+        }
+        
+        if (error.code === 'ETIMEDOUT') {
+            console.error('   Analytics service timeout');
+            return res.status(504).json({ 
+                error: 'Analytics service timeout',
+                details: 'Service took too long to respond'
+            });
+        }
+        
+        if (error.response) {
+            // Service responded with error status
+            return res.status(error.response.status).json(error.response.data);
+        }
+        
+        // Unknown error
+        res.status(500).json({ 
+            error: 'Analytics service error',
+            details: error.message
+        });
+    }
+});
+// Debug endpoint to test Analytics Service connectivity
+app.get('/api/debug/analytics-status', authenticateGateway, requireRole(['advocate']), async (req, res) => {
+    try {
+        // Test if Analytics Service is reachable
+        const healthCheck = await axios({
+            method: 'GET',
+            url: `${ANALYTICS_SERVICE_URL}/health`,
+            timeout: 5000
+        });
+        
+        res.json({
+            success: true,
+            analytics_service: {
+                url: ANALYTICS_SERVICE_URL,
+                status: 'healthy',
+                response: healthCheck.data
+            }
+        });
+    } catch (error) {
+        res.status(503).json({
+            success: false,
+            analytics_service: {
+                url: ANALYTICS_SERVICE_URL,
+                status: 'unhealthy',
+                error: error.code || error.message
+            }
+        });
+    }
+});
 // ============================================
 // START SERVER
 // ============================================
