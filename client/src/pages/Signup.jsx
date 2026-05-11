@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Lock, Mail, User, Users, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Navbar from '../components/Layout/Navbar';
 import { authApi, getApiErrorMessage } from '../lib/authApi';
@@ -8,6 +8,7 @@ import { authApi, getApiErrorMessage } from '../lib/authApi';
 const Signup = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [showDemoToast, setShowDemoToast] = useState(true);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -17,6 +18,19 @@ const Signup = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
+  // Check if user has dismissed the demo toast before
+  useEffect(() => {
+    const dismissed = localStorage.getItem('demoToastDismissed');
+    if (dismissed === 'true') {
+      setShowDemoToast(false);
+    }
+  }, []);
+
+  const dismissDemoToast = () => {
+    setShowDemoToast(false);
+    localStorage.setItem('demoToastDismissed', 'true');
+  };
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -89,13 +103,54 @@ const Signup = () => {
 
   const handleGoogleSignup = () => {
     setIsGoogleLoading(true);
-    // Redirect to Google OAuth endpoint
     window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/auth/google`;
+  };
+
+  const handleDemoClick = () => {
+    navigate('/login');
+    toast.success('🎭 Try demo accounts: advocate@gmail.com / demo@gmail.com', {
+      duration: 5000,
+      icon: '👨‍⚖️',
+    });
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       <Navbar />
+
+      {/* Demo Toast Notification - Top Right */}
+      {showDemoToast && (
+        <div className="fixed top-20 right-4 z-50 max-w-sm animate-in slide-in-from-top-2 fade-in duration-300">
+          <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl shadow-lg p-3">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+                  <Users className="w-4 h-4 text-amber-600" />
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-amber-800">🎭 Test the App</p>
+                <p className="text-xs text-amber-700 mt-0.5">
+                  Want to try without signing up?
+                </p>
+                <button
+                  onClick={handleDemoClick}
+                  className="mt-2 text-xs font-medium text-amber-800 hover:text-amber-900 underline underline-offset-2 cursor-pointer"
+                >
+                  Use demo accounts →
+                </button>
+              </div>
+              <button
+                onClick={dismissDemoToast}
+                className="flex-shrink-0 text-amber-500 hover:text-amber-700 transition-colors cursor-pointer"
+                aria-label="Dismiss"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <main className="flex min-h-[calc(100vh-64px)] items-center justify-center px-4 sm:px-6 py-8 sm:py-12 md:py-16 lg:py-20">
         <div className="w-full max-w-[95%] sm:max-w-md md:max-w-lg lg:max-w-md">
@@ -183,7 +238,7 @@ const Signup = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
                   </button>
@@ -200,15 +255,15 @@ const Signup = () => {
                   checked={agreeTerms}
                   onChange={(e) => setAgreeTerms(e.target.checked)}
                   required
-                  className="mt-0.5 w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-500 focus:ring-2"
+                  className="mt-0.5 w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-500 focus:ring-2 cursor-pointer"
                 />
                 <span className="text-sm text-gray-600">
                   I agree to the{' '}
-                  <a href="#" className="font-semibold text-gray-900 hover:text-gray-700 transition-colors">
+                  <a href="#" className="font-semibold text-gray-900 hover:text-gray-700 transition-colors cursor-pointer">
                     Terms
                   </a>{' '}
                   and{' '}
-                  <a href="#" className="font-semibold text-gray-900 hover:text-gray-700 transition-colors">
+                  <a href="#" className="font-semibold text-gray-900 hover:text-gray-700 transition-colors cursor-pointer">
                     Privacy Policy
                   </a>
                 </span>
@@ -225,7 +280,7 @@ const Signup = () => {
                          bg-gray-900 hover:bg-gray-800 
                          disabled:opacity-70 disabled:cursor-not-allowed
                          transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]
-                         shadow-lg hover:shadow-xl"
+                         shadow-lg hover:shadow-xl cursor-pointer"
               >
                 {isSubmitting ? (
                   <div className="flex items-center justify-center gap-2">
@@ -261,7 +316,7 @@ const Signup = () => {
                        hover:bg-gray-50 hover:border-gray-400
                        disabled:opacity-70 disabled:cursor-not-allowed
                        transition-all duration-200 transform hover:scale-[1.01] active:scale-[0.99]
-                       flex items-center justify-center gap-3"
+                       flex items-center justify-center gap-3 cursor-pointer"
             >
               {isGoogleLoading ? (
                 <div className="flex items-center justify-center gap-2">
@@ -297,7 +352,7 @@ const Signup = () => {
             <div className="mt-5 sm:mt-6 text-center">
               <p className="text-gray-600 text-sm sm:text-base">
                 Already have an account?{' '}
-                <Link to="/login" className="font-semibold text-gray-900 hover:text-gray-700 transition-colors">
+                <Link to="/login" className="font-semibold text-gray-900 hover:text-gray-700 transition-colors cursor-pointer">
                   Log in
                 </Link>
               </p>

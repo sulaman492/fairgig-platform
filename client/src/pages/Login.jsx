@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Eye, EyeOff, Lock, Mail, Briefcase } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Lock, Mail, Briefcase, UserCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Navbar from '../components/Layout/Navbar';
 import { authApi, getApiErrorMessage } from '../lib/authApi';
@@ -34,8 +34,14 @@ const Login = () => {
         localStorage.setItem('rememberMe', 'true');
       }
 
+      // Redirect based on role
+      const userRole = response.data.user?.role;
       setTimeout(() => {
-        navigate('/dashboard');
+        if (userRole === 'advocate') {
+          navigate('/advocate/dashboard');
+        } else {
+          navigate('/dashboard');
+        }
       }, 500);
       
     } catch (error) {
@@ -47,6 +53,15 @@ const Login = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Fill demo credentials
+  const fillDemoCredentials = (demoEmail, demoPassword) => {
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+    toast.success('Demo credentials filled! Click Continue to login.', {
+      duration: 2000,
+    });
   };
 
   return (
@@ -64,6 +79,33 @@ const Login = () => {
             </h1>
             <p className="text-sm sm:text-base text-gray-500 mt-1 sm:mt-2">
               Sign in to continue to your dashboard
+            </p>
+          </div>
+
+          {/* Demo Credentials Banner - MINIMAL */}
+          <div className="mb-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <UserCheck className="w-4 h-4 text-blue-600" />
+              <span className="text-xs font-semibold text-blue-800 uppercase tracking-wide">Demo Accounts</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <button
+                onClick={() => fillDemoCredentials('advocate@gmail.com', 'advocate123')}
+                className="text-left p-2 rounded-lg bg-white/60 hover:bg-white transition border border-blue-100 cursor-pointer"
+              >
+                <div className="font-medium text-purple-700">👨‍⚖️ Advocate</div>
+                <div className="text-gray-500 text-[10px] truncate">advocate@gmail.com</div>
+              </button>
+              <button
+                onClick={() => fillDemoCredentials('demo@gmail.com', 'demo123')}
+                className="text-left p-2 rounded-lg bg-white/60 hover:bg-white transition border border-green-100 cursor-pointer"
+              >
+                <div className="font-medium text-green-700">👷 Worker</div>
+                <div className="text-gray-500 text-[10px] truncate">demo@gmail.com</div>
+              </button>
+            </div>
+            <p className="text-[10px] text-gray-400 text-center mt-2 cursor-default">
+              Click any account to auto-fill credentials
             </p>
           </div>
 
@@ -111,7 +153,7 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
                   </button>
@@ -124,12 +166,12 @@ const Login = () => {
                   <input
                     type="checkbox"
                     checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-500 focus:ring-2"
+                    onChange={(e) => setRememberMe(e.checked)}
+                    className="w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-500 focus:ring-2 cursor-pointer"
                   />
-                  <span className="text-gray-600 text-sm">Remember me</span>
+                  <span className="text-gray-600 text-sm cursor-pointer">Remember me</span>
                 </label>
-                <a href="#" className="text-gray-600 hover:text-gray-900 font-medium transition-colors text-sm">
+                <a href="#" className="text-gray-600 hover:text-gray-900 font-medium transition-colors text-sm cursor-pointer">
                   Forgot password?
                 </a>
               </div>
@@ -142,7 +184,7 @@ const Login = () => {
                          bg-gray-900 hover:bg-gray-800 
                          disabled:opacity-70 disabled:cursor-not-allowed
                          transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]
-                         shadow-lg hover:shadow-xl"
+                         shadow-lg hover:shadow-xl cursor-pointer"
               >
                 {isSubmitting ? (
                   <div className="flex items-center justify-center gap-2">
@@ -162,7 +204,7 @@ const Login = () => {
             <div className="mt-5 sm:mt-6 text-center">
               <p className="text-gray-600 text-sm sm:text-base">
                 Don't have an account?{' '}
-                <Link to="/signup" className="font-semibold text-gray-900 hover:text-gray-700 transition-colors">
+                <Link to="/signup" className="font-semibold text-gray-900 hover:text-gray-700 transition-colors cursor-pointer">
                   Create one here
                 </Link>
               </p>
