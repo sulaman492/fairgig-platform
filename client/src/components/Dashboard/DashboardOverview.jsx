@@ -276,7 +276,7 @@ export default function DashboardOverview() {
         <h3 className="text-xl font-semibold text-gray-700">No Data Yet</h3>
         <p className="text-gray-500 mt-2">Start logging your shifts to see insights and analytics!</p>
         <button
-          onClick={() => navigate('/earnings')}
+          onClick={() => navigate('/dashboard?tab=earnings')}
           className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
         >
           Log Your First Shift
@@ -333,7 +333,7 @@ export default function DashboardOverview() {
             )}
           </div>
           <button
-            onClick={() => navigate('/analytics')}
+            onClick={() => navigate('/dashboard?tab=analytics')}
             className="w-full mt-3 text-center text-sm text-green-700 hover:text-green-800 font-medium flex items-center justify-center gap-1"
           >
             View Details <ArrowUpRight className="h-3 w-3" />
@@ -356,7 +356,7 @@ export default function DashboardOverview() {
               </p>
             </div>
             <button
-              onClick={() => navigate('/earnings')}
+              onClick={() => navigate('/dashboard?tab=earnings')}
               className="w-full mt-3 text-center text-sm text-red-700 hover:text-red-800 font-medium flex items-center justify-center gap-1"
             >
               Review Shifts <ArrowUpRight className="h-3 w-3" />
@@ -412,7 +412,7 @@ export default function DashboardOverview() {
                   </div>
                 </div>
                 <button
-                  onClick={() => navigate('/earnings')}
+                  onClick={() => navigate('/dashboard?tab=earnings')}
                   className="text-sm bg-orange-100 hover:bg-orange-200 text-orange-700 px-3 py-1.5 rounded-lg font-medium transition"
                 >
                   Review
@@ -489,7 +489,7 @@ export default function DashboardOverview() {
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-gray-900">Recent Activity</h3>
           <button
-            onClick={() => navigate('/earnings')}
+            onClick={() => navigate('/dashboard?tab=earnings')}
             className="text-sm text-blue-600 hover:text-blue-700 font-medium"
           >
             View All →

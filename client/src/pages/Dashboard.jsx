@@ -1,6 +1,6 @@
 // src/pages/Dashboard.jsx
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     BarChart3,
     FileBadge2,
@@ -41,7 +41,7 @@ const advocateDashboardItems = [
 
 const Dashboard = () => {
     const navigate = useNavigate();
-    const [activeItem, setActiveItem] = useState('dashboard');
+    const [searchParams, setSearchParams] = useSearchParams();
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [user, setUser] = useState(null);
     const [loadingProfile, setLoadingProfile] = useState(true);
@@ -79,6 +79,15 @@ const Dashboard = () => {
 
     const isAdvocate = user?.role === 'advocate';
     const dashboardItems = isAdvocate ? advocateDashboardItems : workerDashboardItems;
+    const validTabs = dashboardItems.map((item) => item.id);
+    const activeItem = validTabs.includes(searchParams.get('tab')) ? searchParams.get('tab') : 'dashboard';
+
+    useEffect(() => {
+        const currentTab = searchParams.get('tab');
+        if (!currentTab || !validTabs.includes(currentTab)) {
+            setSearchParams({ tab: 'dashboard' }, { replace: true });
+        }
+    }, [searchParams, validTabs, setSearchParams]);
 
     const renderContent = () => {
         if (isAdvocate) {
@@ -128,7 +137,7 @@ const Dashboard = () => {
                                         <button
                                             key={item.id}
                                             type="button"
-                                            onClick={() => setActiveItem(item.id)}
+                                            onClick={() => setSearchParams({ tab: item.id })}
                                             className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition ${
                                                 isActive
                                                     ? 'bg-slate-950 text-white'
