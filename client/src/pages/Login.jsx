@@ -37,7 +37,7 @@ const Login = () => {
       const userRole = response.data.user?.role;
       setTimeout(() => {
         if (userRole === 'advocate') {
-          navigate('/advocate/dashboard');
+          navigate('/dashboard');
         } else {
           navigate('/dashboard');
         }
