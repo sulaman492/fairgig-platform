@@ -34,7 +34,6 @@ const Login = () => {
         localStorage.setItem('rememberMe', 'true');
       }
 
-      // Redirect based on role
       const userRole = response.data.user?.role;
       setTimeout(() => {
         if (userRole === 'advocate') {
@@ -55,7 +54,6 @@ const Login = () => {
     }
   };
 
-  // Fill demo credentials
   const fillDemoCredentials = (demoEmail, demoPassword) => {
     setEmail(demoEmail);
     setPassword(demoPassword);
@@ -68,11 +66,10 @@ const Login = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       <Navbar />
       
-      {/* Responsive main container */}
       <main className="flex min-h-[calc(100vh-64px)] items-center justify-center px-4 sm:px-6 py-8 sm:py-12 md:py-16 lg:py-20">
         <div className="w-full max-w-[95%] sm:max-w-md md:max-w-lg lg:max-w-md">
           
-          {/* Welcome Section - Responsive typography */}
+          {/* Welcome Section */}
           <div className="text-center mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
               Welcome Back
@@ -82,8 +79,8 @@ const Login = () => {
             </p>
           </div>
 
-          {/* Demo Credentials Banner - MINIMAL */}
-          <div className="mb-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3">
+          {/* Demo Credentials Banner */}
+          <div className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3">
             <div className="flex items-center gap-2 mb-2">
               <UserCheck className="w-4 h-4 text-blue-600" />
               <span className="text-xs font-semibold text-blue-800 uppercase tracking-wide">Demo Accounts</span>
@@ -109,11 +106,11 @@ const Login = () => {
             </p>
           </div>
 
-          {/* Form Card - Responsive padding */}
+          {/* Form Card */}
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-5 sm:p-6 md:p-8">
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
               
-              {/* Email Field - Responsive input sizing */}
+              {/* Email Field */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                   Email Address
@@ -160,7 +157,7 @@ const Login = () => {
                 </div>
               </div>
 
-              {/* Remember Me & Forgot Password - Responsive row/column */}
+              {/* Remember Me & Forgot Password */}
               <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-3 xs:gap-0 text-sm">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -176,7 +173,7 @@ const Login = () => {
                 </a>
               </div>
 
-              {/* Submit Button - Responsive sizing */}
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -210,7 +207,7 @@ const Login = () => {
               </p>
             </div>
 
-            {/* Trust Badge - Responsive text size */}
+            {/* Trust Badge */}
             <div className="mt-5 sm:mt-6 pt-5 sm:pt-6 border-t border-gray-100">
               <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs text-gray-400">
                 <div className="flex items-center gap-1">

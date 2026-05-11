@@ -43,8 +43,7 @@ const Navbar = () => {
           )}
           <Link
             to={isAuthPage ? '/' : '/signup'}
-            className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
-          >
+            className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-5 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-100">
             {isAuthPage ? 'Back to home' : 'Get started'}
             <ChevronRight className="h-4 w-4" />
           </Link>
